@@ -9,7 +9,7 @@ public class MixingProxy {
     private void startServer() {
         try {
             // create on port 4444
-            Registry registry = LocateRegistry.createRegistry(4446);
+            Registry registry = LocateRegistry.createRegistry(6666);
             // create new services
             registry.rebind("MixingService", new MixingProxyImpl());
 

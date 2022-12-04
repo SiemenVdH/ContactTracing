@@ -1,4 +1,5 @@
 package com.example.contacttracing.Client;
+
 import com.example.contacttracing.Interfaces.RegistrarInterface;
 
 import java.rmi.registry.LocateRegistry;
@@ -50,8 +51,9 @@ public class CateringFacility {
         new SecureRandom().nextBytes(Ri);
 
         byte[] combined = new byte[Ri.length + pseudoKeys.get(0).length];
+        byte[] pseudoKey = pseudoKeys.remove(0);
         for (int i = 0; i < combined.length; ++i) {
-            combined[i] = i < Ri.length ? Ri[i] : pseudoKeys.remove(0)[i - Ri.length];
+            combined[i] = i < Ri.length ? Ri[i] : pseudoKey[i - Ri.length];
         }
 
         MessageDigest md = MessageDigest.getInstance("SHA-256");

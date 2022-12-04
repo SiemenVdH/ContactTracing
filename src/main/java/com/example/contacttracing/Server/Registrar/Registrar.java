@@ -11,6 +11,12 @@ import java.security.*;
 public class Registrar {
     private SecretKey masterKey;
 
+    public Registrar() throws NoSuchAlgorithmException {
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+        keyGenerator.init(256);
+        this.masterKey = keyGenerator.generateKey();
+    }
+
     public Cipher getMasterKey() throws NoSuchPaddingException, NoSuchAlgorithmException,
             InvalidAlgorithmParameterException, InvalidKeyException
     {
@@ -23,12 +29,6 @@ public class Registrar {
         return cipher;
     }
 
-    private void generateMasterKey() throws NoSuchAlgorithmException {
-        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-        keyGenerator.init(256);
-        masterKey = keyGenerator.generateKey();
-    }
-
     private void startServer() {
         try {
             // create on port 4444
@@ -36,15 +36,13 @@ public class Registrar {
             // create new services
             registry.rebind("RegistrarService", new RegistrarImpl());
 
-            generateMasterKey();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
         System.out.println("System is ready");
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws NoSuchAlgorithmException {
         Registrar main = new Registrar();
         main.startServer();
     }

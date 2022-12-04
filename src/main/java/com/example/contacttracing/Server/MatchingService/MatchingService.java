@@ -9,7 +9,7 @@ public class MatchingService {
     private void startServer() {
         try {
             // create on port 4444
-            Registry registry = LocateRegistry.createRegistry(4445);
+            Registry registry = LocateRegistry.createRegistry(5555);
             // create new services
             registry.rebind("MatchingService", new MatchingServiceImpl());
 

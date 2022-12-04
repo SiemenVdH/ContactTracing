@@ -21,12 +21,17 @@ import java.util.ArrayList;
 
 
 public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInterface {
-    Registrar reg = new Registrar();
-    byte[] cipherText;
-    ArrayList<byte[]> derivedKeys;
-    ArrayList<byte[]> hashedQueue;
+    private Registrar reg;
+    private byte[] cipherText;
+    private ArrayList<byte[]> derivedKeys;
+    private ArrayList<byte[]> hashedQueue;
 
-    public RegistrarImpl() throws RemoteException {}
+
+    public RegistrarImpl() throws RemoteException, NoSuchAlgorithmException {
+        this.reg = new Registrar();
+        this.derivedKeys = new ArrayList<>();
+        this.hashedQueue = new ArrayList<>();
+    }
 
     @Override
     public void deriveKeys(String CF) throws RemoteException, InvalidAlgorithmParameterException,
