@@ -18,6 +18,7 @@ public class UserApp {
             RegistrarInterface regImpl = (RegistrarInterface) myRegistry.lookup("RegistrarService");
 
 
+
         } catch (Exception e) {
             e.printStackTrace();
 

@@ -1,4 +1,6 @@
 package com.example.contacttracing.Interfaces;
 
-public interface MatchingInterface {
+import java.rmi.Remote;
+
+public interface MatchingInterface extends Remote {
 }

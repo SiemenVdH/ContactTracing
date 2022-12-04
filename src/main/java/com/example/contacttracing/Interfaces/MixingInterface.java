@@ -1,4 +1,6 @@
 package com.example.contacttracing.Interfaces;
 
-public interface MixingInterface {
+import java.rmi.Remote;
+
+public interface MixingInterface extends Remote {
 }
