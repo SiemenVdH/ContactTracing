@@ -12,22 +12,6 @@ import java.time.*;
 public class Registrar {
     private SecretKey masterKey;
 
-    public Registrar() throws NoSuchAlgorithmException {
-        generateMaterKey();
-    }
-
-    public Cipher getMasterKey() throws NoSuchPaddingException, NoSuchAlgorithmException,
-            InvalidAlgorithmParameterException, InvalidKeyException
-    {
-        return getCipherKey();
-    }
-
-    public int getDayOfMonth() {
-        int month = LocalDateTime.now().getMonthValue();
-        int year = LocalDateTime.now().getYear();
-        YearMonth yearMonthObject = YearMonth.of(year, month);
-        return yearMonthObject.lengthOfMonth();
-    }
 
     private Cipher getCipherKey() throws NoSuchPaddingException, NoSuchAlgorithmException,
             InvalidAlgorithmParameterException, InvalidKeyException
@@ -58,6 +42,23 @@ public class Registrar {
             e.printStackTrace();
         }
         System.out.println("System is ready");
+    }
+
+    public Registrar() throws NoSuchAlgorithmException {
+        generateMaterKey();
+    }
+
+    public Cipher getMasterKey() throws NoSuchPaddingException, NoSuchAlgorithmException,
+            InvalidAlgorithmParameterException, InvalidKeyException
+    {
+        return getCipherKey();
+    }
+
+    public int getDayOfMonth() {
+        int month = LocalDateTime.now().getMonthValue();
+        int year = LocalDateTime.now().getYear();
+        YearMonth yearMonthObject = YearMonth.of(year, month);
+        return yearMonthObject.lengthOfMonth();
     }
 
     public static void main(String[] args) throws NoSuchAlgorithmException {

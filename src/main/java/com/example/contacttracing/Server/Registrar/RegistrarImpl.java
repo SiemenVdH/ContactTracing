@@ -17,11 +17,6 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
     private Map<String, ArrayList<byte[]>> derivedDB;
     private Map<String, ArrayList<byte[]>> pseudoDB;
 
-    public RegistrarImpl() throws RemoteException, NoSuchAlgorithmException {
-        this.reg = new Registrar();
-        this.derivedDB = new HashMap<>();
-        this.pseudoDB = new HashMap<>();
-    }
 
     private void makeDerivedKeys(String CF, int daysInMonth, int currentDay, ArrayList<byte[]> derivedKeys) throws
             InvalidAlgorithmParameterException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException,
@@ -43,6 +38,12 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
             byte[] hash = md.digest(temp.get(i));
             pseudoQueue.add(hash);
         }
+    }
+
+    public RegistrarImpl() throws RemoteException, NoSuchAlgorithmException {
+        this.reg = new Registrar();
+        this.derivedDB = new HashMap<>();
+        this.pseudoDB = new HashMap<>();
     }
 
     @Override

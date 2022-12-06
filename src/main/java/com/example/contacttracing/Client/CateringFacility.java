@@ -22,14 +22,6 @@ public class CateringFacility {
     private String CF; // Unique identifier
     private ArrayList<byte[]> pseudoKeys;
 
-    public CateringFacility(String n,String c,String p, String bN){
-        this.name = n;
-        this.city = c;
-        this.phone = p;
-        this.busNum = bN;
-        this.CF = n+c+p+bN;
-        this.pseudoKeys = new ArrayList<>();
-    }
 
     private String generateQRString(byte[] todayPseudo) throws Exception {
         byte[] Ri = new byte[16];
@@ -46,7 +38,7 @@ public class CateringFacility {
         return Ri.toString()+CF+hash.toString();
     }
 
-    public void generateQR(String text) throws WriterException, IOException {
+    private void generateQR(String text) throws WriterException, IOException {
         String charset = "UTF-8";
         Map<EncodeHintType, ErrorCorrectionLevel> hashMap = new HashMap<>();
         hashMap.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
@@ -88,6 +80,15 @@ public class CateringFacility {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public CateringFacility(String n,String c,String p, String bN){
+        this.name = n;
+        this.city = c;
+        this.phone = p;
+        this.busNum = bN;
+        this.CF = n+c+p+bN;
+        this.pseudoKeys = new ArrayList<>();
     }
 
     public static void main(String[] args) {
