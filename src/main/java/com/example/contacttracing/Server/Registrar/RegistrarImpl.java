@@ -23,35 +23,44 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
         this.pseudoDB = new HashMap<>();
     }
 
-    @Override
-    public void deriveKeys(String CF) throws RemoteException, InvalidAlgorithmParameterException,
-            NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, IllegalBlockSizeException,
-            BadPaddingException
+    private void makeDerivedKeys(String CF, int daysInMonth, int currentDay, ArrayList<byte[]> derivedKeys) throws
+            InvalidAlgorithmParameterException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException,
+            IllegalBlockSizeException, BadPaddingException
     {
-        int daysInMonth = reg.getDayOfMonth();
-        int currentday = LocalDateTime.now().getDayOfMonth();
-        ArrayList<byte[]> derivedKeys = new ArrayList<>();
-
-        for(int i=0; i<(daysInMonth-currentday); i++) {
+        for(int i=0; i<(daysInMonth-currentDay); i++) {
             Cipher cipher = reg.getMasterKey();
             String specificDay = String.valueOf(LocalDateTime.now().plusDays(i).getDayOfMonth());
             String input = CF+specificDay;
             cipherText = cipher.doFinal(input.getBytes());
             derivedKeys.add(cipherText);
         }
+    }
+
+    private void hashKeys(String CF, ArrayList<byte[]> pseudoQueue) throws NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        ArrayList<byte[]> temp = derivedDB.get(CF);
+        for(int i=0; i<temp.size(); i++) {
+            byte[] hash = md.digest(temp.get(i));
+            pseudoQueue.add(hash);
+        }
+    }
+
+    @Override
+    public void deriveKeys(String CF) throws RemoteException, InvalidAlgorithmParameterException,
+            NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException,
+            InvalidKeyException
+    {
+        int daysInMonth = reg.getDayOfMonth();
+        int currentDay = LocalDateTime.now().getDayOfMonth();
+        ArrayList<byte[]> derivedKeys = new ArrayList<>();
+        makeDerivedKeys(CF, daysInMonth, currentDay, derivedKeys);
         derivedDB.put(CF, derivedKeys);
     }
 
     @Override
     public ArrayList<byte[]> getPseudoKeys(String CF) throws RemoteException, NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        ArrayList<byte[]> temp = derivedDB.get(CF);
         ArrayList<byte[]> pseudoQueue = new ArrayList<>();
-
-        for(int i=0; i<temp.size(); i++) {
-            byte[] hash = md.digest(temp.get(i));
-            pseudoQueue.add(hash);
-        }
+        hashKeys(CF, pseudoQueue);
         pseudoDB.put(CF, pseudoQueue);
         return pseudoDB.get(CF);
     }
