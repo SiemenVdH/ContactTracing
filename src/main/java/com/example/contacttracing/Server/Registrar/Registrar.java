@@ -7,17 +7,29 @@ import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 
 import java.security.*;
+import java.time.*;
 
 public class Registrar {
     private SecretKey masterKey;
 
     public Registrar() throws NoSuchAlgorithmException {
-        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-        keyGenerator.init(256);
-        this.masterKey = keyGenerator.generateKey();
+        generateMaterKey();
     }
 
     public Cipher getMasterKey() throws NoSuchPaddingException, NoSuchAlgorithmException,
+            InvalidAlgorithmParameterException, InvalidKeyException
+    {
+        return getCipherKey();
+    }
+
+    public int getDayOfMonth() {
+        int month = LocalDateTime.now().getMonthValue();
+        int year = LocalDateTime.now().getYear();
+        YearMonth yearMonthObject = YearMonth.of(year, month);
+        return yearMonthObject.lengthOfMonth();
+    }
+
+    private Cipher getCipherKey() throws NoSuchPaddingException, NoSuchAlgorithmException,
             InvalidAlgorithmParameterException, InvalidKeyException
     {
         byte[] initVect = new byte[16];
@@ -27,6 +39,12 @@ public class Registrar {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.ENCRYPT_MODE, masterKey, iv);
         return cipher;
+    }
+
+    private void generateMaterKey() throws NoSuchAlgorithmException {
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+        keyGenerator.init(256);
+        this.masterKey = keyGenerator.generateKey();
     }
 
     private void startServer() {
