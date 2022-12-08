@@ -4,31 +4,40 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 import javax.crypto.*;
-import javax.crypto.spec.IvParameterSpec;
-
 import java.security.*;
 import java.time.*;
 
 public class Registrar {
     private SecretKey masterKey;
+    private PrivateKey privateKey;
+    private PublicKey publicKey;
 
 
-    private Cipher getCipherKey() throws NoSuchPaddingException, NoSuchAlgorithmException,
-            InvalidAlgorithmParameterException, InvalidKeyException
-    {
+    private void generateMasterKey() throws NoSuchAlgorithmException {
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+        keyGenerator.init(256);
+        this.masterKey = keyGenerator.generateKey();
+    }
+
+    private void generateKeyPair() throws NoSuchAlgorithmException {
+        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+        KeyPair keyPair = keyGen.generateKeyPair();
+        privateKey = keyPair.getPrivate();
+        publicKey = keyPair.getPublic();
+    }
+
+    private Mac getMacKey() throws NoSuchAlgorithmException, InvalidKeyException {
+        /* Less secure and complexer to use!
         byte[] initVect = new byte[16];
         new SecureRandom().nextBytes(initVect);
         IvParameterSpec iv = new IvParameterSpec(initVect);
 
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.ENCRYPT_MODE, masterKey, iv);
-        return cipher;
-    }
-
-    private void generateMaterKey() throws NoSuchAlgorithmException {
-        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-        keyGenerator.init(256);
-        this.masterKey = keyGenerator.generateKey();
+        return cipher;*/
+        Mac mac = Mac.getInstance("HmacSHA256");
+        mac.init(masterKey);
+        return mac;
     }
 
     private void startServer() {
@@ -45,14 +54,14 @@ public class Registrar {
     }
 
     public Registrar() throws NoSuchAlgorithmException {
-        generateMaterKey();
+        generateMasterKey();
+        generateKeyPair();
     }
 
-    public Cipher getMasterKey() throws NoSuchPaddingException, NoSuchAlgorithmException,
-            InvalidAlgorithmParameterException, InvalidKeyException
-    {
-        return getCipherKey();
-    }
+    public Mac getMasterKey() throws NoSuchAlgorithmException, InvalidKeyException {return getMacKey();}
+
+    public PublicKey getPublicKey() {return publicKey;}
+    public PrivateKey getPrivateKey() {return privateKey;}
 
     public int getDayOfMonth() {
         int month = LocalDateTime.now().getMonthValue();

@@ -16,17 +16,18 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
     private byte[] cipherText;
     private Map<String, ArrayList<byte[]>> derivedDB;
     private Map<String, ArrayList<byte[]>> pseudoDB;
+    private Map<String, ArrayList<byte[]>> userTokensDB;
+    private ArrayList<String> usersDB;
 
 
     private void makeDerivedKeys(String CF, int daysInMonth, int currentDay, ArrayList<byte[]> derivedKeys) throws
-            InvalidAlgorithmParameterException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException,
-            IllegalBlockSizeException, BadPaddingException
+            NoSuchAlgorithmException, InvalidKeyException
     {
         for(int i=0; i<(daysInMonth-currentDay); i++) {
-            Cipher cipher = reg.getMasterKey();
+            Mac mac = reg.getMasterKey();
             String specificDay = String.valueOf(LocalDateTime.now().plusDays(i).getDayOfMonth());
             String input = CF+specificDay;
-            cipherText = cipher.doFinal(input.getBytes());
+            cipherText = mac.doFinal(input.getBytes());
             derivedKeys.add(cipherText);
         }
     }
@@ -40,17 +41,36 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
         }
     }
 
+    private void signTokens(byte day, ArrayList<byte[]> tokens) throws NoSuchAlgorithmException,
+            InvalidKeyException, SignatureException
+    {
+        for(int i=0; i<48; i++) {
+            byte[] random = new byte[16];
+            new SecureRandom().nextBytes(random);
+
+            byte[] combined = new byte[random.length + day];
+            for (int j = 0; j < combined.length; j++) {
+                combined[j] = j < random.length ? random[j] : day;
+            }
+
+            Signature signature = Signature.getInstance("SHA256withRSA");
+            signature.initSign(reg.getPrivateKey());
+            signature.update(combined);
+            byte[] digitalSignature = signature.sign();
+            tokens.add(digitalSignature);
+        }
+    }
+
     public RegistrarImpl() throws RemoteException, NoSuchAlgorithmException {
         this.reg = new Registrar();
         this.derivedDB = new HashMap<>();
         this.pseudoDB = new HashMap<>();
+        this.userTokensDB = new HashMap<>();
+        this.usersDB = new ArrayList<>();
     }
 
     @Override
-    public void deriveKeys(String CF) throws RemoteException, InvalidAlgorithmParameterException,
-            NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, BadPaddingException,
-            InvalidKeyException
-    {
+    public void deriveKeys(String CF) throws RemoteException, NoSuchAlgorithmException, InvalidKeyException {
         int daysInMonth = reg.getDayOfMonth();
         int currentDay = LocalDateTime.now().getDayOfMonth();
         ArrayList<byte[]> derivedKeys = new ArrayList<>();
@@ -71,5 +91,22 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
             derivedDB.remove(CF);
             pseudoDB.remove(CF);
         }
+    }
+
+    @Override
+    public boolean enrolUser(String phone) throws RemoteException {
+        if (!usersDB.contains(phone)) return false;
+        return true;
+    }
+
+    @Override
+    public ArrayList<byte[]> getTokens(String phone, int today) throws RemoteException, NoSuchAlgorithmException,
+            SignatureException, InvalidKeyException
+    {
+        ArrayList<byte[]> tokens = new ArrayList<>();
+        byte day = (byte) today;
+        signTokens(day, tokens);
+        userTokensDB.put(phone, tokens);
+        return tokens;
     }
 }

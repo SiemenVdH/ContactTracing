@@ -10,25 +10,15 @@ h
 8src/main/java/com/example/contacttracing/Controller.java,a\3\a36b1dcad1b3936b0a075cf8c33221295704d17c
 i
 9src/main/java/com/example/contacttracing/Application.java,6\0\6033ecd0c6c86cc087aa8f1e8a7ea35eb2453d18
-l
-<src/main/java/com/example/contacttracing/Client/UserApp.java,6\6\66c2427f4be37f0c4b9487cbf0e4d97bf2ba3cab
 7
 pom.xml,4\4\442292b8a7efeabbe4cc176709b833b1792140ec
 8
 mvnw.cmd,1\f\1f1763f358c257ea3515417352b82b0165647ad1
 U
 %.mvn/wrapper/maven-wrapper.properties,3\2\32e074f71d16c1e88ac02aa83592ca6ad1fd98a8
-x
-Hsrc/main/java/com/example/contacttracing/Interfaces/MixingInterface.java,0\1\0135e1ada1ac4c417f572f8329ffe70129322500
 z
 Jsrc/main/java/com/example/contacttracing/Interfaces/MatchingInterface.java,5\b\5b58c6a0a4ed783892aed399f6e27ae681be88a4
 ˆ
 Xsrc/main/java/com/example/contacttracing/Server/MatchingService/MatchingServiceImpl.java,d\a\da0cdd78bd03540a4324c3b0b3769e9624e6166c
-€
-Psrc/main/java/com/example/contacttracing/Server/MixingProxy/MixingProxyImpl.java,6\5\65fb361843cbf4d25b2d0091984e5b32f32a8322
-„
-Tsrc/main/java/com/example/contacttracing/Server/MatchingService/MatchingService.java,2\0\20757d39dd9d2093f37b1f256a21b1c8fddf2448
-|
-Lsrc/main/java/com/example/contacttracing/Server/MixingProxy/MixingProxy.java,e\9\e9ad2f660de0b1619db9e857fe6e958ac538feef
 N
 src/main/java/module-info.java,1\c\1c89a5491fbfda3fb050196d6a239f20200296e7
