@@ -1,18 +1,54 @@
 package com.example.contacttracing.Server.MixingProxy;
 
+import com.example.contacttracing.Shared.Capsule;
+import com.example.contacttracing.Interfaces.MatchingInterface;
 import com.example.contacttracing.Interfaces.RegistrarInterface;
 
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.security.PublicKey;
+
+import java.security.*;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.*;
 
 public class MixingProxy {
+    private PublicKey publicKeyRegistrar;
+    private PrivateKey privateKey;
     private PublicKey publicKey;
+    private Map<LocalDateTime, Capsule> capsuleEntrys;
+
+
+    private void generateKeyPair() throws NoSuchAlgorithmException {
+        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+        KeyPair keyPair = keyGen.generateKeyPair();
+        privateKey = keyPair.getPrivate();
+        publicKey = keyPair.getPublic();
+    }
+    private Map<LocalDateTime, Capsule> shuffleCapsules() {
+        List<Map.Entry<LocalDateTime,Capsule>> list
+                = new ArrayList<>(capsuleEntrys.entrySet());
+        Collections.shuffle(list);
+        Map<LocalDateTime, Capsule> shuffledWindow = new LinkedHashMap<>();
+        for (Map.Entry<LocalDateTime, Capsule> entry : list) {
+            shuffledWindow.put(entry.getKey(), entry.getValue());
+        }
+        return shuffledWindow;
+    }
+
+    private ArrayList<Capsule> extractCapsules(Map<LocalDateTime, Capsule> shuffledMap) {
+        ArrayList<Capsule> list = new ArrayList<>();
+        for (Capsule value : shuffledMap.values()) {
+            list.add(value);
+        }
+        return list;
+    }
 
     private void startServer() {
         try {
             // create on port 5555
-            Registry registry = LocateRegistry.createRegistry(5555);
+            Registry registry = LocateRegistry.createRegistry(4445);
             // create new services
             registry.rebind("MixingService", new MixingProxyImpl());
 
@@ -21,7 +57,25 @@ public class MixingProxy {
             // search for Registrar service
             RegistrarInterface regImpl = (RegistrarInterface) myRegistry1.lookup("RegistrarService");
 
-            publicKey = regImpl.getPublicKey();
+            // fire to localhost port 4444
+            Registry myRegistry2 = LocateRegistry.getRegistry("localhost", 4446);
+            // search for Registrar service
+            MatchingInterface matchImpl = (MatchingInterface) myRegistry2.lookup("MatchingService");
+
+            publicKeyRegistrar = regImpl.getPublicKey();
+
+            Runnable generateTokens = () -> {
+                try {
+                    Map<LocalDateTime, Capsule> shuffledMap = shuffleCapsules();
+                    ArrayList<Capsule> capsules = extractCapsules(shuffledMap);
+                    matchImpl.flushCapsules(capsules);
+                    capsuleEntrys.clear();
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
+            };
+            ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+            executor.scheduleAtFixedRate(generateTokens, 0, 5, TimeUnit.SECONDS);  // iedere dag
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -29,9 +83,16 @@ public class MixingProxy {
         System.out.println("System is ready");
     }
 
+    public MixingProxy() throws NoSuchAlgorithmException {
+        this.capsuleEntrys = new HashMap<>();
+        generateKeyPair();
+    }
     public PublicKey getPublicKey() {return publicKey;}
+    public PrivateKey getPrivateKey() {return privateKey;}
+    public PublicKey getPublicKeyRegistrar() {return publicKeyRegistrar;}
+    public void storeCapsule(LocalDateTime now, Capsule capsule) {capsuleEntrys.put(now, capsule);}
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws NoSuchAlgorithmException {
         MixingProxy main = new MixingProxy();
         main.startServer();
     }

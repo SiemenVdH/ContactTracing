@@ -51,9 +51,7 @@ public class CateringFacility extends Controller {
             Runnable getKeys = () -> {
                 try {
                     if(pseudoKeys.isEmpty()) {
-                        // Clear old keys
-                        regImpl.clearDailyAndPseudoKeys(CF);
-                        // Derive daily and pseudo keys for the coming 30 days
+                        // Clear old keys and derive daily and pseudo keys for the coming 30 days
                         regImpl.deriveKeys(CF);
                         pseudoKeys = regImpl.getPseudoKeys(CF);
                     }
