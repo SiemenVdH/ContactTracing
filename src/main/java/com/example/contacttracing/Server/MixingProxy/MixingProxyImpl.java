@@ -11,10 +11,10 @@ import java.time.LocalDateTime;
 
 public class MixingProxyImpl extends UnicastRemoteObject implements MixingInterface {
     private final MixingProxy mixprox;
+
     private PublicKey getPublicKeyRegistrar() {
         return mixprox.getPublicKeyRegistrar();
     }
-
 
     private boolean verifySignature(byte[] dailyToken, byte[] random) throws InvalidKeyException, NoSuchAlgorithmException,
             SignatureException

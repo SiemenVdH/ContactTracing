@@ -21,13 +21,29 @@ public class UserApp extends Controller {
     private static Map<LocalDateTime, Log> logValues;
     private RegistrarInterface regImpl;
     private static MixingInterface mixImpl;
+    private static byte[] random;
 
+
+
+    private byte[] generateRandomValue() {
+        byte[] random = new byte[16];
+        new SecureRandom().nextBytes(random);
+        return random;
+    }
 
     private static Log readQR(String qrText) {
         String[] extracted = qrText.split("@");
         Log log = new Log(extracted[0], extracted[1], extracted[2], LocalDateTime.now());
         logValues.put(LocalDateTime.now(), log);
         return log;
+    }
+
+    private static boolean confirmSignature(byte[] digitalSignature, Capsule capsule) throws NoSuchAlgorithmException,
+            RemoteException, InvalidKeyException, SignatureException {
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        signature.initVerify(mixImpl.getPublicKey());
+        signature.update(capsule.getHash().getBytes());
+        return signature.verify(digitalSignature);
     }
 
     private void run() {
@@ -51,8 +67,8 @@ public class UserApp extends Controller {
 
                 Runnable generateTokens = () -> {
                     try {
-                        regImpl.clearDailyTokens(phone);
-                        dailyTokens = regImpl.getTokens(phone, today);
+                        random = generateRandomValue();
+                        dailyTokens = regImpl.getTokens(phone, today, random);
                         clearOldLogValues();
                     } catch (RemoteException | NoSuchAlgorithmException | SignatureException | InvalidKeyException e) {
                         throw new RuntimeException(e);
@@ -68,10 +84,11 @@ public class UserApp extends Controller {
 
     public static void registerEntry(String qr) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, RemoteException {
         Log log = readQR(qr);
-        Capsule capsule = new Capsule(dailyTokens.remove(0), log.getIneterval(), log.getHash());
+        Capsule capsule = new Capsule(dailyTokens.remove(0), log.getIneterval(), log.getHash(), random);
         byte[] digitalConfirmation = mixImpl.sendCapsule(capsule);
-        if(digitalConfirmation!=null) {
-            Controller.Polyline.set(digitalConfirmation);
+        boolean confirmed = confirmSignature(digitalConfirmation, capsule);
+        if(confirmed) {
+            //Controller.Polyline.set(digitalConfirmation);
         }
     }
 

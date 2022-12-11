@@ -6,6 +6,7 @@ import com.example.contacttracing.Interfaces.MatchingInterface;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+import java.security.PublicKey;
 import java.util.ArrayList;
 
 public class MatchingServiceImpl extends UnicastRemoteObject implements MatchingInterface {
@@ -17,5 +18,10 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
     @Override
     public void flushCapsules(ArrayList<Capsule> capsules) throws RemoteException {
         matchserv.addToCapsules(capsules);
+    }
+
+    @Override
+    public void forwardLogs(PublicKey publicKey) throws RemoteException {
+
     }
 }
