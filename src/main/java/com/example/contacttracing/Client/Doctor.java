@@ -53,6 +53,7 @@ public class Doctor {
             MatchingInterface mathImpl = (MatchingInterface) myRegistry.lookup("MatchingService");
 
             readLog();
+            System.out.println("Log file successfully read");
             for(String logs: allLogs) {
                 mathImpl.forwardLogs(publicKey, signLogs(logs), logs);
             }

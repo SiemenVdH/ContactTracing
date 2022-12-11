@@ -84,14 +84,14 @@ public class UserApp extends Controller implements Serializable {
         }
     }
 
-    public static void registerEntry(String qr) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+    public static void registerEntry(String qr) throws IOException, NoSuchAlgorithmException, SignatureException,
+            InvalidKeyException {
         Log log = readQR(qr);
         Capsule capsule = new Capsule(log.getDailyToken(), log.getInterval(), log.getHash(), random);
         byte[] digitalConfirmation = mixImpl.sendCapsule(capsule);
         boolean confirmed = confirmSignature(digitalConfirmation, capsule);
         if(confirmed) {
             System.out.println(Arrays.toString(digitalConfirmation));
-            //Controller.Polyline.set(digitalConfirmation);
             InputStream is = new ByteArrayInputStream(digitalConfirmation);
             BufferedImage bi = ImageIO.read(is);
         }
@@ -106,7 +106,6 @@ public class UserApp extends Controller implements Serializable {
     }
 
     public static void printLogs() {
-
         for(LocalDateTime key: logValues.keySet()){
             logValues.get(key).writeToFile();
         }
