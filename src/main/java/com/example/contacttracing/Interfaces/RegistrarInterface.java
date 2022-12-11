@@ -1,5 +1,6 @@
 package com.example.contacttracing.Interfaces;
 
+import java.io.Serializable;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
@@ -13,4 +14,5 @@ public interface RegistrarInterface extends Remote {
     ArrayList<byte[]> getTokens(String phone, int today, byte[] random) throws RemoteException, NoSuchAlgorithmException,
             SignatureException, InvalidKeyException;
     PublicKey getPublicKey() throws RemoteException;
+    Map<String, ArrayList<byte[]>> getAllPseudos() throws RemoteException;
 }

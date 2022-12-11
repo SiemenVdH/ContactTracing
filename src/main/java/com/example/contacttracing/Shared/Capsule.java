@@ -1,6 +1,8 @@
 package com.example.contacttracing.Shared;
 
-public class Capsule {
+import java.io.Serializable;
+
+public class Capsule implements Serializable {
     private int[] interval;
     private String hash;
     private byte[] dailyToken;

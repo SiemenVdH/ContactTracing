@@ -6,14 +6,24 @@ import com.example.contacttracing.Interfaces.MatchingInterface;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-import java.security.PublicKey;
+import java.security.*;
 import java.util.ArrayList;
 
 public class MatchingServiceImpl extends UnicastRemoteObject implements MatchingInterface {
-    private final MatchingService matchserv = new MatchingService();
+    private final MatchingService matchserv;
 
+    private boolean confirmSignature(PublicKey publicKey, byte[] digitalSignature, String data) throws
+            NoSuchAlgorithmException, InvalidKeyException, SignatureException
+    {
+        Signature signature = Signature.getInstance("SHA256withRSA");
+        signature.initVerify(publicKey);
+        signature.update(data.getBytes());
+        return signature.verify(digitalSignature);
+    }
 
-    public MatchingServiceImpl() throws RemoteException {}
+    public MatchingServiceImpl() throws RemoteException {
+        this.matchserv = new MatchingService();
+    }
 
     @Override
     public void flushCapsules(ArrayList<Capsule> capsules) throws RemoteException {
@@ -21,7 +31,9 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
     }
 
     @Override
-    public void forwardLogs(PublicKey publicKey) throws RemoteException {
-
+    public void forwardLogs(PublicKey publicKey, byte[] digitalSignature, String logData) throws RemoteException,
+            NoSuchAlgorithmException, SignatureException, InvalidKeyException
+    {
+        boolean confirmed = confirmSignature(publicKey, digitalSignature, logData);
     }
 }

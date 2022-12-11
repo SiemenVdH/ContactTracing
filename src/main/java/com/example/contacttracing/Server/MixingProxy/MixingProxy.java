@@ -23,8 +23,8 @@ public class MixingProxy {
     private void generateKeyPair() throws NoSuchAlgorithmException {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
         KeyPair keyPair = keyGen.generateKeyPair();
-        privateKey = keyPair.getPrivate();
-        publicKey = keyPair.getPublic();
+        this.privateKey = keyPair.getPrivate();
+        this.publicKey = keyPair.getPublic();
     }
     private Map<LocalDateTime, Capsule> shuffleCapsules() {
         List<Map.Entry<LocalDateTime,Capsule>> list
@@ -47,7 +47,7 @@ public class MixingProxy {
 
     private void startServer() {
         try {
-            // create on port 5555
+            // create on port 4445
             Registry registry = LocateRegistry.createRegistry(4445);
             // create new services
             registry.rebind("MixingService", new MixingProxyImpl());
@@ -57,12 +57,12 @@ public class MixingProxy {
             // search for Registrar service
             RegistrarInterface regImpl = (RegistrarInterface) myRegistry1.lookup("RegistrarService");
 
-            // fire to localhost port 4444
+            // fire to localhost port 4446
             Registry myRegistry2 = LocateRegistry.getRegistry("localhost", 4446);
             // search for Registrar service
             MatchingInterface matchImpl = (MatchingInterface) myRegistry2.lookup("MatchingService");
 
-            publicKeyRegistrar = regImpl.getPublicKey();
+            this.publicKeyRegistrar = regImpl.getPublicKey();
 
             Runnable generateTokens = () -> {
                 try {

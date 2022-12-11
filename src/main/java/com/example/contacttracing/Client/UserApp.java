@@ -33,7 +33,7 @@ public class UserApp extends Controller {
 
     private static Log readQR(String qrText) {
         String[] extracted = qrText.split("@");
-        Log log = new Log(extracted[0], extracted[1], extracted[2], LocalDateTime.now());
+        Log log = new Log(extracted[0], extracted[1], extracted[2], LocalDateTime.now(), dailyTokens.remove(0));
         logValues.put(LocalDateTime.now(), log);
         return log;
     }
@@ -84,7 +84,7 @@ public class UserApp extends Controller {
 
     public static void registerEntry(String qr) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, RemoteException {
         Log log = readQR(qr);
-        Capsule capsule = new Capsule(dailyTokens.remove(0), log.getIneterval(), log.getHash(), random);
+        Capsule capsule = new Capsule(log.getDailyToken(), log.getInterval(), log.getHash(), random);
         byte[] digitalConfirmation = mixImpl.sendCapsule(capsule);
         boolean confirmed = confirmSignature(digitalConfirmation, capsule);
         if(confirmed) {
@@ -95,14 +95,20 @@ public class UserApp extends Controller {
     public static void clearOldLogValues() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException{
         LocalDateTime today = LocalDateTime.now();
         for(LocalDateTime e: logValues.keySet())
-            if(Duration.between(e, today).toDays()>10)      // entries ouder dan 10 dagen
+            if(Duration.between(e, today).toDays()>10)   // entries ouder dan 10 dagen
                 logValues.remove(e);
+    }
+
+    public static void printLogs() {
+        for(int i=0; i<logValues.size(); i++){
+            logValues.get(i).writeToFile();
+        }
     }
 
     public UserApp(String p){
         this.phone = p;
-        dailyTokens = new ArrayList<>();
-        logValues = new HashMap<>();
+        this.dailyTokens = new ArrayList<>();
+        this.logValues = new HashMap<>();
         run();
     }
 }

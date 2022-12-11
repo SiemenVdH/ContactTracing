@@ -104,4 +104,9 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
     public PublicKey getPublicKey() throws RemoteException {
         return reg.getPublicKey();
     }
+
+    @Override
+    public Map<String, ArrayList<byte[]>> getAllPseudos() throws RemoteException {
+        return  reg.getPseudoDB();
+    }
 }

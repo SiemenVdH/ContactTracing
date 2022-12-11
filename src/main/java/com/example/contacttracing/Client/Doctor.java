@@ -2,28 +2,47 @@ package com.example.contacttracing.Client;
 
 import com.example.contacttracing.Interfaces.MatchingInterface;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.lang.reflect.Array;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 import java.security.*;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 
 public class Doctor {
     private PrivateKey privateKey;
     private PublicKey publicKey;
+    private ArrayList<String> allLogs;
 
+
+    private void readLog() {
+        try {
+            File myObj = new File("log.txt");
+            Scanner myReader = new Scanner(myObj);
+            while (myReader.hasNextLine()) {
+                String data = myReader.nextLine();
+                allLogs.add(data);
+            }
+            myReader.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
 
     private void generateKeyPair() throws NoSuchAlgorithmException {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
         KeyPair keyPair = keyGen.generateKeyPair();
-        privateKey = keyPair.getPrivate();
-        publicKey = keyPair.getPublic();
+        this.privateKey = keyPair.getPrivate();
+        this.publicKey = keyPair.getPublic();
     }
-    private byte[] signLogs() throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    private byte[] signLogs(String logs) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         Signature signature = Signature.getInstance("SHA256withRSA");
         signature.initSign(privateKey);
-        signature.update();
+        signature.update(logs.getBytes());
         return signature.sign();
     }
 
@@ -34,21 +53,22 @@ public class Doctor {
             // search for SendService & ReceiveService
             MatchingInterface mathImpl = (MatchingInterface) myRegistry.lookup("MatchingService");
 
-            signLogs();
-            mathImpl.forwardLogs(publicKey);
+            readLog();
+            for(String logs: allLogs) {
+                mathImpl.forwardLogs(publicKey, signLogs(logs), logs);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public Doctor() throws NoSuchAlgorithmException {generateKeyPair();}
+    public Doctor() throws NoSuchAlgorithmException {
+        this.allLogs = new ArrayList<>();
+        generateKeyPair();
+    }
 
     public static void main(String[] args) throws NoSuchAlgorithmException {
-        Scanner input = new Scanner(System.in);
-        System.out.println("Phone of sick patient: ");
-        String phone = input.nextLine();
-
         Doctor main = new Doctor();
         main.run();
     }

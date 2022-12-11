@@ -28,8 +28,8 @@ public class Registrar {
     private void generateKeyPair() throws NoSuchAlgorithmException {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
         KeyPair keyPair = keyGen.generateKeyPair();
-        privateKey = keyPair.getPrivate();
-        publicKey = keyPair.getPublic();
+        this.privateKey = keyPair.getPrivate();
+        this.publicKey = keyPair.getPublic();
     }
     private Mac getMacKey() throws NoSuchAlgorithmException, InvalidKeyException {
         /* Less secure and complexer to use!
