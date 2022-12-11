@@ -32,14 +32,6 @@ public class Registrar {
         this.publicKey = keyPair.getPublic();
     }
     private Mac getMacKey() throws NoSuchAlgorithmException, InvalidKeyException {
-        /* Less secure and complexer to use!
-        byte[] initVect = new byte[16];
-        new SecureRandom().nextBytes(initVect);
-        IvParameterSpec iv = new IvParameterSpec(initVect);
-
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, masterKey, iv);
-        return cipher;*/
         Mac mac = Mac.getInstance("HmacSHA256");
         mac.init(masterKey);
         return mac;
