@@ -9,10 +9,12 @@ import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CateringFacility extends Controller {
@@ -37,7 +39,7 @@ public class CateringFacility extends Controller {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] hash = md.digest(combined);
 
-        return Ri.toString()+CF+hash.toString();
+        return Arrays.toString(Ri) +CF+ Arrays.toString(hash);
     }
 
 //    private void generateQR(String text) throws WriterException, IOException {
@@ -67,6 +69,7 @@ public class CateringFacility extends Controller {
             RegistrarInterface regImpl = (RegistrarInterface) myRegistry.lookup("RegistrarService");
 
             AtomicInteger today = new AtomicInteger(LocalDateTime.now().getDayOfMonth());
+            AtomicBoolean firstDay = new AtomicBoolean(true);
 
             Runnable getKeys = () -> {
                 try {
@@ -78,7 +81,8 @@ public class CateringFacility extends Controller {
                         pseudoKeys = regImpl.getPseudoKeys(CF);
                     }
 
-                    if(LocalDateTime.now().getDayOfMonth()!= today.get()) {
+                    if(LocalDateTime.now().getDayOfMonth()!= today.get()|| firstDay.get()) {
+                        firstDay.set(false);
                         today.set(LocalDateTime.now().getDayOfMonth());
                         // Get pseudo key of the day
                         byte[] todayPseudo = pseudoKeys.remove(0);
