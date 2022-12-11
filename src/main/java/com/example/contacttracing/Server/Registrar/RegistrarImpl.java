@@ -94,6 +94,11 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
     }
 
     @Override
+    public void clearDailyTokens(String phone) throws RemoteException {
+        if(userTokensDB.containsKey(phone)) {userTokensDB.remove(phone);}
+    }
+
+    @Override
     public boolean enrolUser(String phone) throws RemoteException {
         if (!usersDB.contains(phone)) return false;
         return true;
@@ -108,5 +113,10 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
         signTokens(day, tokens);
         userTokensDB.put(phone, tokens);
         return tokens;
+    }
+
+    @Override
+    public PublicKey getPublicKey() throws RemoteException {
+        return reg.getPublicKey();
     }
 }

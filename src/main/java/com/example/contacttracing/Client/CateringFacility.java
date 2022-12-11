@@ -5,11 +5,6 @@ import com.example.contacttracing.Interfaces.RegistrarInterface;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import com.google.zxing.*;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
-
-import java.io.IOException;
 import java.security.*;
 import java.time.*;
 import java.util.*;
@@ -20,6 +15,7 @@ public class CateringFacility {
     private String phone;
     private String busNum; // Business number
     private String CF; // Unique identifier
+    private String qrText;
     private ArrayList<byte[]> pseudoKeys;
 
 
@@ -35,17 +31,8 @@ public class CateringFacility {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] hash = md.digest(combined);
 
-        return Ri.toString()+CF+hash.toString();
-    }
-
-    private void generateQR(String text) throws WriterException, IOException {
-        String charset = "UTF-8";
-        Map<EncodeHintType, ErrorCorrectionLevel> hashMap = new HashMap<>();
-        hashMap.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
-
-        BitMatrix matrix = new MultiFormatWriter().encode(new String(text.getBytes(charset), charset),
-                BarcodeFormat.QR_CODE, 200, 200);
-        //BitMatrix to javaFx
+        String qrStr = Ri.toString()+"@"+CF+"@"+hash.toString();
+        return qrStr;
     }
 
     private void run() {
@@ -57,6 +44,7 @@ public class CateringFacility {
 
             int today = LocalDateTime.now().getDayOfMonth();
             boolean firstDay = true; // generate QR on start day
+
 
             while(true) {
                 if(pseudoKeys.isEmpty()) {
@@ -73,8 +61,9 @@ public class CateringFacility {
                     // Get pseudo key of the day
                     byte[] todayPseudo = pseudoKeys.remove(0);
                     //  Generate daily QR string and code
-                    String qrText = generateQRString(todayPseudo);
-                    generateQR(qrText);
+                    qrText = generateQRString(todayPseudo);
+                    System.out.println(qrText);
+                    // generateQR(qrText, System.getProperty("user.dir"));
                 }
             }
         } catch (Exception e) {

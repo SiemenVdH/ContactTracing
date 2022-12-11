@@ -9,11 +9,10 @@ import java.util.*;
 public interface RegistrarInterface extends Remote {
     void deriveKeys(String CF) throws RemoteException, NoSuchAlgorithmException, InvalidKeyException;
     ArrayList<byte[]> getPseudoKeys(String CF) throws RemoteException, NoSuchAlgorithmException;
-
     void clearDailyAndPseudoKeys(String CF) throws RemoteException;
-
+    void clearDailyTokens(String phone) throws RemoteException;
     boolean enrolUser(String phone) throws RemoteException;
-
     ArrayList<byte[]> getTokens(String phone, int today) throws RemoteException, NoSuchAlgorithmException,
             SignatureException, InvalidKeyException;
+    PublicKey getPublicKey() throws RemoteException;
 }
