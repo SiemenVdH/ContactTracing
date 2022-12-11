@@ -1,25 +1,27 @@
 package com.example.contacttracing.Client;
 
+import com.example.contacttracing.Controller;
 import com.example.contacttracing.Interfaces.RegistrarInterface;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Scanner;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import com.google.zxing.*;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+public class CateringFacility extends Controller {
 
-import java.io.IOException;
-import java.security.*;
-import java.time.*;
-import java.util.*;
-
-public class CateringFacility {
-    private String name;
-    private String city;
-    private String phone;
-    private String busNum; // Business number
-    private String CF; // Unique identifier
+    private final String name;
+    private final String city;
+    private final String phone;
+    private final String busNum; // Business number
+    private final String CF; // Unique identifier
     private ArrayList<byte[]> pseudoKeys;
 
 
@@ -38,15 +40,24 @@ public class CateringFacility {
         return Ri.toString()+CF+hash.toString();
     }
 
-    private void generateQR(String text) throws WriterException, IOException {
-        String charset = "UTF-8";
-        Map<EncodeHintType, ErrorCorrectionLevel> hashMap = new HashMap<>();
-        hashMap.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
-
-        BitMatrix matrix = new MultiFormatWriter().encode(new String(text.getBytes(charset), charset),
-                BarcodeFormat.QR_CODE, 200, 200);
-        //BitMatrix to javaFx
-    }
+//    private void generateQR(String text) throws WriterException, IOException {
+//        String charset = "UTF-8";
+//        Map<EncodeHintType, ErrorCorrectionLevel> hashMap = new HashMap<>();
+//        hashMap.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
+//
+//        BitMatrix matrix = new MultiFormatWriter().encode(new String(text.getBytes(charset), charset), BarcodeFormat.QR_CODE, 200, 200);
+//        //BitMatrix to javaFx
+//        int height = matrix.getHeight();
+//        int width = matrix.getWidth();
+//        Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+//        for (int x = 0; x < width; x++){
+//            for (int y = 0; y < height; y++){
+//                bmp.setPixel(x, y, matrix.get(x,y) ? Color.BLACK : Color.WHITE);
+//            }
+//        }
+//        ImageView qr_image = (ImageView) findViewById(R.id.qrimage);
+//        qr_image.setImageBitmap(bmp);
+//    }
 
     private void run() {
         try {
@@ -55,28 +66,34 @@ public class CateringFacility {
             // search for SendService & ReceiveService
             RegistrarInterface regImpl = (RegistrarInterface) myRegistry.lookup("RegistrarService");
 
-            int today = LocalDateTime.now().getDayOfMonth();
-            boolean firstDay = true; // generate QR on start day
+            AtomicInteger today = new AtomicInteger(LocalDateTime.now().getDayOfMonth());
 
-            while(true) {
-                if(pseudoKeys.isEmpty()) {
-                    // Clear old keys
-                    regImpl.clearDailyAndPseudoKeys(CF);
-                    // Derive daily and pseudo keys for the coming 30 days
-                    regImpl.deriveKeys(CF);
-                    pseudoKeys = regImpl.getPseudoKeys(CF);
-                }
+            Runnable getKeys = () -> {
+                try {
+                    if(pseudoKeys.isEmpty()) {
+                        // Clear old keys
+                        regImpl.clearDailyAndPseudoKeys(CF);
+                        // Derive daily and pseudo keys for the coming 30 days
+                        regImpl.deriveKeys(CF);
+                        pseudoKeys = regImpl.getPseudoKeys(CF);
+                    }
 
-                if(firstDay || LocalDateTime.now().getDayOfMonth()!= today) {
-                    today = LocalDateTime.now().getDayOfMonth();
-                    firstDay = false;
-                    // Get pseudo key of the day
-                    byte[] todayPseudo = pseudoKeys.remove(0);
-                    //  Generate daily QR string and code
-                    String qrText = generateQRString(todayPseudo);
-                    generateQR(qrText);
+                    if(LocalDateTime.now().getDayOfMonth()!= today.get()) {
+                        today.set(LocalDateTime.now().getDayOfMonth());
+                        // Get pseudo key of the day
+                        byte[] todayPseudo = pseudoKeys.remove(0);
+                        //  Generate daily QR string and code
+                        String qrText = generateQRString(todayPseudo);
+                        System.out.println(qrText);
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
-            }
+            };
+
+            ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+            executor.scheduleAtFixedRate(getKeys, 0, 5, TimeUnit.SECONDS);   //iedere dag
+
         } catch (Exception e) {
             e.printStackTrace();
         }
