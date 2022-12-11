@@ -2,6 +2,7 @@ package com.example.contacttracing.Client;
 
 import com.example.contacttracing.Interfaces.MixingInterface;
 import com.example.contacttracing.Interfaces.RegistrarInterface;
+import com.example.contacttracing.Shared.Capsule;
 
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -19,8 +20,14 @@ public class UserApp {
     private Map<LocalDateTime, Log> logValues;
     private RegistrarInterface regImpl;
     private MixingInterface mixImpl;
+    private byte[] random;
 
 
+    private byte[] generateRandomValue() {
+        byte[] random = new byte[16];
+        new SecureRandom().nextBytes(random);
+        return random;
+    }
     private Log readQR(String qrText) {
         String[] extracted = qrText.split("@");
         Log log = new Log(extracted[0], extracted[1], extracted[2], LocalDateTime.now());
@@ -35,7 +42,7 @@ public class UserApp {
             // search for Registrar service
             regImpl = (RegistrarInterface) myRegistry1.lookup("RegistrarService");
             // fire to localhost port 5555
-            Registry myRegistry2 = LocateRegistry.getRegistry("localhost", 5555);
+            Registry myRegistry2 = LocateRegistry.getRegistry("localhost", 4445);
             // search for Mixing service
             mixImpl = (MixingInterface) myRegistry2.lookup("MixingService");
 
@@ -49,23 +56,30 @@ public class UserApp {
 
                 Runnable generateTokens = () -> {
                     try {
-                        dailyTokens = regImpl.getTokens(phone, today);
+                        random = generateRandomValue();
+                        dailyTokens = regImpl.getTokens(phone, today, random);
                     } catch (RemoteException | NoSuchAlgorithmException | SignatureException | InvalidKeyException e) {
                         throw new RuntimeException(e);
                     }
                 };
                 ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-                executor.scheduleAtFixedRate(generateTokens, 0, 5, TimeUnit.SECONDS);   //iedere dag
+                executor.scheduleAtFixedRate(generateTokens, 0, 5, TimeUnit.SECONDS);  // iedere dag
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void registerEntry() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+    public void registerEntry() throws RemoteException, NoSuchAlgorithmException, SignatureException,
+            InvalidKeyException
+    {
         Log log = readQR("");
-        Capsule capsule = new Capsule(dailyTokens.remove(0), log.getIneterval(), log.getHash());
-        mixImpl.sendCapsule(capsule);
+        Capsule capsule = new Capsule(dailyTokens.remove(0), log.getIneterval(), log.getHash(), random);
+        byte[] digitalConfirmation = mixImpl.sendCapsule(capsule);
+        if(digitalConfirmation!=null) {
+            // Controller.pictureFrame.set(digitalConfirmation)
+        }
+
     }
 
     public UserApp(String p){

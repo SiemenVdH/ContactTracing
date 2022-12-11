@@ -6,11 +6,18 @@ import java.rmi.registry.Registry;
 import javax.crypto.*;
 import java.security.*;
 import java.time.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Registrar {
     private SecretKey masterKey;
     private PrivateKey privateKey;
     private PublicKey publicKey;
+    private Map<String, ArrayList<byte[]>> derivedDB;
+    private Map<String, ArrayList<byte[]>> pseudoDB;
+    private Map<String, ArrayList<byte[]>> userTokensDB;
+    private ArrayList<String> usersDB;
 
 
     private void generateMasterKey() throws NoSuchAlgorithmException {
@@ -18,14 +25,12 @@ public class Registrar {
         keyGenerator.init(256);
         this.masterKey = keyGenerator.generateKey();
     }
-
     private void generateKeyPair() throws NoSuchAlgorithmException {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
         KeyPair keyPair = keyGen.generateKeyPair();
         privateKey = keyPair.getPrivate();
         publicKey = keyPair.getPublic();
     }
-
     private Mac getMacKey() throws NoSuchAlgorithmException, InvalidKeyException {
         /* Less secure and complexer to use!
         byte[] initVect = new byte[16];
@@ -39,7 +44,6 @@ public class Registrar {
         mac.init(masterKey);
         return mac;
     }
-
     private void startServer() {
         try {
             // create on port 4444
@@ -54,21 +58,33 @@ public class Registrar {
     }
 
     public Registrar() throws NoSuchAlgorithmException {
+        this.derivedDB = new HashMap<>();
+        this.pseudoDB = new HashMap<>();
+        this.userTokensDB = new HashMap<>();
+        this.usersDB = new ArrayList<>();
         generateMasterKey();
         generateKeyPair();
     }
-
     public Mac getMasterKey() throws NoSuchAlgorithmException, InvalidKeyException {return getMacKey();}
-
     public PublicKey getPublicKey() {return publicKey;}
     public PrivateKey getPrivateKey() {return privateKey;}
-
-    public int getDayOfMonth() {
+    public int getDaysOfMonth() {
         int month = LocalDateTime.now().getMonthValue();
         int year = LocalDateTime.now().getYear();
         YearMonth yearMonthObject = YearMonth.of(year, month);
         return yearMonthObject.lengthOfMonth();
     }
+    public Map<String, ArrayList<byte[]>> getDerivedDB() {return derivedDB;}
+    public void addToDerivedDB(String CF, ArrayList<byte[]> derivedKeys) {derivedDB.put(CF, derivedKeys);}
+    public void removeDerivedDB(String CF) {derivedDB.remove(CF);}
+    public Map<String, ArrayList<byte[]>> getPseudoDB() {return pseudoDB;}
+    public void addToPseudoDB(String CF, ArrayList<byte[]> pseudoQueue) {pseudoDB.put(CF, pseudoQueue);}
+    public void removePseudoDB(String CF) {pseudoDB.remove(CF);}
+    public Map<String, ArrayList<byte[]>> getUserTokensDB() {return userTokensDB;}
+    public void addToUserTokensDB(String phone, ArrayList<byte[]> tokens) {userTokensDB.put(phone, tokens);}
+    public void removeUserTokensDB(String phone) {userTokensDB.remove(phone);}
+    public ArrayList<String> getUsersDB() {return usersDB;}
+    public void addUser(String phone) {usersDB.add(phone);}
 
     public static void main(String[] args) throws NoSuchAlgorithmException {
         Registrar main = new Registrar();
