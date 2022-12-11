@@ -21,9 +21,7 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
         return signature.verify(digitalSignature);
     }
 
-    public MatchingServiceImpl() throws RemoteException {
-        this.matchserv = new MatchingService();
-    }
+    public MatchingServiceImpl(MatchingService ms) throws RemoteException {this.matchserv = ms;}
 
     @Override
     public void flushCapsules(ArrayList<Capsule> capsules) throws RemoteException {
@@ -35,5 +33,9 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
             NoSuchAlgorithmException, SignatureException, InvalidKeyException
     {
         boolean confirmed = confirmSignature(publicKey, digitalSignature, logData);
+        if(confirmed) {
+            matchserv.addLogs(logData);
+        }
+        else System.out.println("Invalid fowarding");
     }
 }

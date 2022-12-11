@@ -7,23 +7,20 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
 public class MatchingService {
     private ArrayList<Capsule> capsules;
     private Map<String, ArrayList<byte[]>> dailyPseudoDB;
+    private ArrayList<String[]> userLogValues;
 
-    private void startServer() {
+    private void startServer(MatchingService matchserv) {
         try {
             // create on port 6666
             Registry registry = LocateRegistry.createRegistry(4446);
             // create new services
-            registry.rebind("MatchingService", new MatchingServiceImpl());
+            registry.rebind("MatchingService", new MatchingServiceImpl(matchserv));
             // fire to localhost port 4444
             Registry myRegistry = LocateRegistry.getRegistry("localhost", 4444);
             // search for SendService & ReceiveService
@@ -51,14 +48,20 @@ public class MatchingService {
     public MatchingService() {
         this.capsules = new ArrayList<>();
         this.dailyPseudoDB = new HashMap<>();
+        this.userLogValues = new ArrayList<>();
     }
 
     public void addToCapsules(ArrayList<Capsule> mixingCapsules) {
         capsules = mixingCapsules;
     }
 
+    public void addLogs(String logData) {
+        String[] data = logData.split("/");
+        userLogValues.add(data);
+    }
+
     public static void main(String[] args) {
         MatchingService main = new MatchingService();
-        main.startServer();
+        main.startServer(main);
     }
 }

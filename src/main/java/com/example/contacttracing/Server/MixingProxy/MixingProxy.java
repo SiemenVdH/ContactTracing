@@ -41,12 +41,12 @@ public class MixingProxy {
         return new ArrayList<>(shuffledMap.values());
     }
 
-    private void startServer() {
+    private void startServer(MixingProxy mixprox) {
         try {
             // create on port 4445
             Registry registry = LocateRegistry.createRegistry(4445);
             // create new services
-            registry.rebind("MixingService", new MixingProxyImpl());
+            registry.rebind("MixingService", new MixingProxyImpl(mixprox));
 
             // fire to localhost port 4444
             Registry myRegistry1 = LocateRegistry.getRegistry("localhost", 4444);
@@ -90,6 +90,6 @@ public class MixingProxy {
 
     public static void main(String[] args) throws NoSuchAlgorithmException {
         MixingProxy main = new MixingProxy();
-        main.startServer();
+        main.startServer(main);
     }
 }

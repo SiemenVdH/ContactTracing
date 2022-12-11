@@ -140,12 +140,6 @@
                      </children></AnchorPane>
             </content>
           </Tab>
-            <Tab text="CF QR">
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-                    <ImageView fx:id="CF_QR" fitHeight="150.0" fitWidth="200.0" pickOnBounds="true"
-                               preserveRatio="true"/>
-                </AnchorPane>
-            </Tab>
         </tabs>
       </TabPane>
    </children>

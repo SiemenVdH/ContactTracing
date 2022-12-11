@@ -53,9 +53,7 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
         }
     }
 
-    public RegistrarImpl() throws RemoteException, NoSuchAlgorithmException {
-        this.reg = new Registrar();
-    }
+    public RegistrarImpl(Registrar r) throws RemoteException, NoSuchAlgorithmException {this.reg = r;}
 
     @Override
     public void deriveKeys(String CF) throws RemoteException, NoSuchAlgorithmException, InvalidKeyException {
@@ -87,8 +85,8 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
     }
 
     @Override
-    public ArrayList<byte[]> getTokens(String phone, int today, byte[] random) throws RemoteException, NoSuchAlgorithmException,
-            SignatureException, InvalidKeyException
+    public ArrayList<byte[]> getTokens(String phone, int today, byte[] random) throws RemoteException,
+            NoSuchAlgorithmException, SignatureException, InvalidKeyException
     {
         if(reg.getUserTokensDB().containsKey(phone)) {
             reg.removeUserTokensDB(phone);

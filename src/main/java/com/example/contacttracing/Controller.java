@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import javafx.scene.shape.Polyline;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -66,27 +67,27 @@ public class Controller {
         new UserApp(Enroll6.getCharacters().toString());
     }
     @FXML
-    protected void onClickScanQr1() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, RemoteException {
+    protected void onClickScanQr1() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IOException {
         UserApp.registerEntry(CF1.getCharacters().toString());
     }
     @FXML
-    protected void onClickScanQr2() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, RemoteException {
+    protected void onClickScanQr2() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IOException {
         UserApp.registerEntry(CF2.getCharacters().toString());
     }
     @FXML
-    protected void onClickScanQr3() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, RemoteException {
+    protected void onClickScanQr3() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IOException {
         UserApp.registerEntry(CF3.getCharacters().toString());
     }
     @FXML
-    protected void onClickScanQr4() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, RemoteException {
+    protected void onClickScanQr4() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IOException {
         UserApp.registerEntry(CF4.getCharacters().toString());
     }
     @FXML
-    protected void onClickScanQr5() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, RemoteException {
+    protected void onClickScanQr5() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IOException {
         UserApp.registerEntry(CF5.getCharacters().toString());
     }
     @FXML
-    protected void onClickScanQr6() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, RemoteException {
+    protected void onClickScanQr6() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IOException {
         UserApp.registerEntry(CF6.getCharacters().toString());
     }
     protected static void pictureFrame(byte[] bArray){

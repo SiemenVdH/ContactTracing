@@ -3,15 +3,14 @@ package com.example.contacttracing.Server.MixingProxy;
 import com.example.contacttracing.Shared.Capsule;
 import com.example.contacttracing.Interfaces.MixingInterface;
 
-import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
 import java.security.*;
 import java.time.LocalDateTime;
 
-public class MixingProxyImpl extends UnicastRemoteObject implements MixingInterface, Serializable {
-    private final MixingProxy mixprox;
+public class MixingProxyImpl extends UnicastRemoteObject implements MixingInterface {
+    private MixingProxy mixprox;
 
     private PublicKey getPublicKeyRegistrar() {
         return mixprox.getPublicKeyRegistrar();
@@ -39,9 +38,7 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingInterf
         return signature.sign();
     }
 
-    public MixingProxyImpl() throws RemoteException, NoSuchAlgorithmException {
-        this.mixprox = new MixingProxy();
-    }
+    public MixingProxyImpl(MixingProxy mp) throws RemoteException {this.mixprox = mp;}
 
     @Override
     public byte[] sendCapsule(Capsule capsule) throws RemoteException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {

@@ -4,7 +4,6 @@ import com.example.contacttracing.Interfaces.MatchingInterface;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.lang.reflect.Array;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
@@ -48,7 +47,7 @@ public class Doctor {
 
     private void run() {
         try {
-            // fire to localhost port 4444
+            // fire to localhost port 4446
             Registry myRegistry = LocateRegistry.getRegistry("localhost", 4446);
             // search for SendService & ReceiveService
             MatchingInterface mathImpl = (MatchingInterface) myRegistry.lookup("MatchingService");
@@ -57,7 +56,6 @@ public class Doctor {
             for(String logs: allLogs) {
                 mathImpl.forwardLogs(publicKey, signLogs(logs), logs);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -44,12 +44,12 @@ public class Registrar {
         mac.init(masterKey);
         return mac;
     }
-    private void startServer() {
+    private void startServer(Registrar reg) {
         try {
             // create on port 4444
             Registry registry = LocateRegistry.createRegistry(4444);
             // create new services
-            registry.rebind("RegistrarService", new RegistrarImpl());
+            registry.rebind("RegistrarService", new RegistrarImpl(reg));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -88,7 +88,7 @@ public class Registrar {
 
     public static void main(String[] args) throws NoSuchAlgorithmException {
         Registrar main = new Registrar();
-        main.startServer();
+        main.startServer(main);
     }
 
 }

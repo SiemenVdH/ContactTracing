@@ -5,7 +5,10 @@ import com.example.contacttracing.Interfaces.MixingInterface;
 import com.example.contacttracing.Interfaces.RegistrarInterface;
 import com.example.contacttracing.Shared.Capsule;
 
-import java.io.Serializable;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.*;
+
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -81,7 +84,7 @@ public class UserApp extends Controller implements Serializable {
         }
     }
 
-    public static void registerEntry(String qr) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+    public static void registerEntry(String qr) throws IOException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         Log log = readQR(qr);
         Capsule capsule = new Capsule(log.getDailyToken(), log.getInterval(), log.getHash(), random);
         byte[] digitalConfirmation = mixImpl.sendCapsule(capsule);
@@ -89,6 +92,8 @@ public class UserApp extends Controller implements Serializable {
         if(confirmed) {
             System.out.println(Arrays.toString(digitalConfirmation));
             //Controller.Polyline.set(digitalConfirmation);
+            InputStream is = new ByteArrayInputStream(digitalConfirmation);
+            BufferedImage bi = ImageIO.read(is);
         }
 
     }
