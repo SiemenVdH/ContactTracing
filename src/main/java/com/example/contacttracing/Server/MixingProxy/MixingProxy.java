@@ -38,11 +38,7 @@ public class MixingProxy {
     }
 
     private ArrayList<Capsule> extractCapsules(Map<LocalDateTime, Capsule> shuffledMap) {
-        ArrayList<Capsule> list = new ArrayList<>();
-        for (Capsule value : shuffledMap.values()) {
-            list.add(value);
-        }
-        return list;
+        return new ArrayList<>(shuffledMap.values());
     }
 
     private void startServer() {

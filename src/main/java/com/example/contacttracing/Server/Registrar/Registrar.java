@@ -66,8 +66,8 @@ public class Registrar {
         generateKeyPair();
     }
     public Mac getMasterKey() throws NoSuchAlgorithmException, InvalidKeyException {return getMacKey();}
-    public PublicKey getPublicKey() {return publicKey;}
-    public PrivateKey getPrivateKey() {return privateKey;}
+    public PublicKey getPublicKey() {return this.publicKey;}
+    public PrivateKey getPrivateKey() {return this.privateKey;}
     public int getDaysOfMonth() {
         int month = LocalDateTime.now().getMonthValue();
         int year = LocalDateTime.now().getYear();

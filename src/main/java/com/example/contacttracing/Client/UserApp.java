@@ -5,6 +5,7 @@ import com.example.contacttracing.Interfaces.MixingInterface;
 import com.example.contacttracing.Interfaces.RegistrarInterface;
 import com.example.contacttracing.Shared.Capsule;
 
+import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -15,7 +16,7 @@ import java.time.*;
 import java.util.ArrayList;
 import java.util.concurrent.*;
 
-public class UserApp extends Controller {
+public class UserApp extends Controller implements Serializable {
     private final String phone;
     private static ArrayList<byte[]> dailyTokens;
     private static Map<LocalDateTime, Log> logValues;
@@ -30,7 +31,6 @@ public class UserApp extends Controller {
         new SecureRandom().nextBytes(random);
         return random;
     }
-
     private static Log readQR(String qrText) {
         String[] extracted = qrText.split("@");
         Log log = new Log(extracted[0], extracted[1], extracted[2], LocalDateTime.now(), dailyTokens.remove(0));
@@ -51,7 +51,7 @@ public class UserApp extends Controller {
             // fire to localhost port 4444
             Registry myRegistry1 = LocateRegistry.getRegistry("localhost", 4444);
             // search for Registrar service
-            regImpl = (RegistrarInterface) myRegistry1.lookup("RegistrarService");
+            this.regImpl = (RegistrarInterface) myRegistry1.lookup("RegistrarService");
             // fire to localhost port 5556
             Registry myRegistry2 = LocateRegistry.getRegistry("localhost", 4445);
             // search for Mixing service
@@ -59,10 +59,9 @@ public class UserApp extends Controller {
 
             int today = LocalDateTime.now().getDayOfMonth();
 
-            if(regImpl.enrolUser(phone)) {
+            if (regImpl.enrolUser(phone)) {
                 System.out.println("User is already enrolt!");
-            }
-            else {
+            } else {
                 System.out.println("Succesfully enrolt!");
 
                 Runnable generateTokens = () -> {
@@ -82,14 +81,16 @@ public class UserApp extends Controller {
         }
     }
 
-    public static void registerEntry(String qr) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, RemoteException {
+    public static void registerEntry(String qr) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         Log log = readQR(qr);
         Capsule capsule = new Capsule(log.getDailyToken(), log.getInterval(), log.getHash(), random);
         byte[] digitalConfirmation = mixImpl.sendCapsule(capsule);
         boolean confirmed = confirmSignature(digitalConfirmation, capsule);
         if(confirmed) {
+            System.out.println(Arrays.toString(digitalConfirmation));
             //Controller.Polyline.set(digitalConfirmation);
         }
+
     }
 
     public static void clearOldLogValues() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException{
