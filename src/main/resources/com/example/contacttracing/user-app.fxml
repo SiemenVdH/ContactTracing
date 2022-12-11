@@ -126,7 +126,7 @@
                                    <TextField fx:id="Enroll6" />
                                    <Button fx:id="leave6" mnemonicParsing="false" text="Leave" GridPane.rowIndex="2" />
                                    <TextField fx:id="CF6" GridPane.rowIndex="1" />
-                                 <Button mnemonicParsing="false" text="print logs" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
+                                 <Button fx:id="print6" mnemonicParsing="false" onMouseClicked="#onClickPrint6" text="print logs" GridPane.columnIndex="1" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
                                </GridPane>
                            </children>
                         </GridPane>

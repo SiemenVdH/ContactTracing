@@ -128,18 +128,18 @@ public class Controller {
     }
     @FXML
     protected void onClickPrint3(){
-
+        UserApp.printLogs();
     }
     @FXML
     protected void onClickPrint4(){
-
+        UserApp.printLogs();
     }
     @FXML
     protected void onClickPrint5(){
-
+        UserApp.printLogs();
     }
     @FXML
     protected void onClickPrint6(){
-
+        UserApp.printLogs();
     }
 }
