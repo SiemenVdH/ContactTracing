@@ -3,16 +3,22 @@ package com.example.contacttracing.Client;
 import com.example.contacttracing.Interfaces.MixingInterface;
 import com.example.contacttracing.Interfaces.RegistrarInterface;
 
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import java.time.*;
 import java.util.*;
+import java.security.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.concurrent.*;
 
 public class UserApp {
-    private String phone;
+    private final String phone;
     private ArrayList<byte[]> dailyTokens;
     private Map<LocalDateTime, Log> logValues;
+    private RegistrarInterface regImpl;
+    private MixingInterface mixImpl;
 
 
     private Log readQR(String qrText) {
@@ -27,49 +33,45 @@ public class UserApp {
             // fire to localhost port 4444
             Registry myRegistry1 = LocateRegistry.getRegistry("localhost", 4444);
             // search for Registrar service
-            RegistrarInterface regImpl = (RegistrarInterface) myRegistry1.lookup("RegistrarService");
+            regImpl = (RegistrarInterface) myRegistry1.lookup("RegistrarService");
             // fire to localhost port 5555
             Registry myRegistry2 = LocateRegistry.getRegistry("localhost", 5555);
             // search for Mixing service
-            MixingInterface mixImpl = (MixingInterface) myRegistry2.lookup("MixingService");
+            mixImpl = (MixingInterface) myRegistry2.lookup("MixingService");
 
             int today = LocalDateTime.now().getDayOfMonth();
-            boolean firstDay = true;
 
             if(regImpl.enrolUser(phone)) {
                 System.out.println("User is already enrolt!");
             }
             else {
                 System.out.println("Succesfully enrolt!");
-                while(true) {
-                    if(firstDay || LocalDateTime.now().getDayOfMonth()!=today) {
-                        regImpl.clearDailyTokens(phone);
-                        firstDay = false;
-                        today = LocalDateTime.now().getDayOfMonth();
+
+                Runnable generateTokens = () -> {
+                    try {
                         dailyTokens = regImpl.getTokens(phone, today);
+                    } catch (RemoteException | NoSuchAlgorithmException | SignatureException | InvalidKeyException e) {
+                        throw new RuntimeException(e);
                     }
-                    Log log = readQR("");
-                    Capsule capsule = new Capsule(dailyTokens.remove(0), log.getIneterval(), log.getHash());
-                    mixImpl.sendCapsule(capsule);
-                }
+                };
+                ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+                executor.scheduleAtFixedRate(generateTokens, 0, 5, TimeUnit.SECONDS);   //iedere dag
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    public void registerEntry() {
+        Log log = readQR("");
+        Capsule capsule = new Capsule(dailyTokens.remove(0), log.getIneterval(), log.getHash());
+        mixImpl.sendCapsule(capsule);
+    }
+
     public UserApp(String p){
         this.phone = p;
         this.dailyTokens = new ArrayList<>();
         this.logValues = new HashMap<>();
-    }
-
-    public static void main(String[] args) {
-        Scanner input = new Scanner(System.in);
-        System.out.println("Phone: ");
-        String phone = input.nextLine();
-
-        UserApp main = new UserApp(phone);
-        main.run();
+        run();
     }
 }

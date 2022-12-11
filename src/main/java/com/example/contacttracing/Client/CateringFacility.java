@@ -1,5 +1,6 @@
 package com.example.contacttracing.Client;
 
+import com.example.contacttracing.Controller;
 import com.example.contacttracing.Interfaces.RegistrarInterface;
 
 import java.rmi.registry.LocateRegistry;
@@ -8,13 +9,15 @@ import java.rmi.registry.Registry;
 import java.security.*;
 import java.time.*;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.*;
 
-public class CateringFacility {
-    private String name;
-    private String city;
-    private String phone;
-    private String busNum; // Business number
-    private String CF; // Unique identifier
+public class CateringFacility extends Controller {
+    private final String name;
+    private final String city;
+    private final String phone;
+    private final String busNum; // Business number
+    private final String CF; // Unique identifier
     private String qrText;
     private ArrayList<byte[]> pseudoKeys;
 
@@ -42,30 +45,36 @@ public class CateringFacility {
             // search for SendService & ReceiveService
             RegistrarInterface regImpl = (RegistrarInterface) myRegistry.lookup("RegistrarService");
 
-            int today = LocalDateTime.now().getDayOfMonth();
-            boolean firstDay = true; // generate QR on start day
+            AtomicInteger today = new AtomicInteger(LocalDateTime.now().getDayOfMonth());
+            AtomicBoolean firstDay = new AtomicBoolean(true);
 
+            Runnable getKeys = () -> {
+                try {
+                    if(pseudoKeys.isEmpty()) {
+                        // Clear old keys
+                        regImpl.clearDailyAndPseudoKeys(CF);
+                        // Derive daily and pseudo keys for the coming 30 days
+                        regImpl.deriveKeys(CF);
+                        pseudoKeys = regImpl.getPseudoKeys(CF);
+                    }
 
-            while(true) {
-                if(pseudoKeys.isEmpty()) {
-                    // Clear old keys
-                    regImpl.clearDailyAndPseudoKeys(CF);
-                    // Derive daily and pseudo keys for the coming 30 days
-                    regImpl.deriveKeys(CF);
-                    pseudoKeys = regImpl.getPseudoKeys(CF);
+                    if(LocalDateTime.now().getDayOfMonth()!= today.get()|| firstDay.get()) {
+                        firstDay.set(false);
+                        today.set(LocalDateTime.now().getDayOfMonth());
+                        // Get pseudo key of the day
+                        byte[] todayPseudo = pseudoKeys.remove(0);
+                        //  Generate daily QR string and code
+                        qrText = generateQRString(todayPseudo);
+                        System.out.println(qrText);
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
                 }
+            };
 
-                if(firstDay || LocalDateTime.now().getDayOfMonth()!= today) {
-                    today = LocalDateTime.now().getDayOfMonth();
-                    firstDay = false;
-                    // Get pseudo key of the day
-                    byte[] todayPseudo = pseudoKeys.remove(0);
-                    //  Generate daily QR string and code
-                    qrText = generateQRString(todayPseudo);
-                    System.out.println(qrText);
-                    // generateQR(qrText, System.getProperty("user.dir"));
-                }
-            }
+            ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+            executor.scheduleAtFixedRate(getKeys, 0, 5, TimeUnit.SECONDS);   //iedere dag
+
         } catch (Exception e) {
             e.printStackTrace();
         }

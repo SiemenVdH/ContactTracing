@@ -35,8 +35,8 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
     private void hashKeys(String CF, ArrayList<byte[]> pseudoQueue) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         ArrayList<byte[]> temp = derivedDB.get(CF);
-        for(int i=0; i<temp.size(); i++) {
-            byte[] hash = md.digest(temp.get(i));
+        for (byte[] bytes : temp) {
+            byte[] hash = md.digest(bytes);
             pseudoQueue.add(hash);
         }
     }
@@ -100,15 +100,17 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
 
     @Override
     public boolean enrolUser(String phone) throws RemoteException {
-        if (!usersDB.contains(phone)) return false;
+        if (!usersDB.contains(phone)){
+            usersDB.add(phone);
+            return false;
+        }
         return true;
     }
 
     @Override
-    public ArrayList<byte[]> getTokens(String phone, int today) throws RemoteException, NoSuchAlgorithmException,
-            SignatureException, InvalidKeyException
-    {
+    public ArrayList<byte[]> getTokens(String phone, int today) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         ArrayList<byte[]> tokens = new ArrayList<>();
+        //System.out.println("tokens");
         byte day = (byte) today;
         signTokens(day, tokens);
         userTokensDB.put(phone, tokens);
