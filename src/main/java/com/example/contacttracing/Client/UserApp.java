@@ -9,7 +9,7 @@ import java.rmi.registry.Registry;
 
 import java.util.*;
 import java.security.*;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.concurrent.*;
 
@@ -62,7 +62,7 @@ public class UserApp {
         }
     }
 
-    public void registerEntry() {
+    public void registerEntry() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         Log log = readQR("");
         Capsule capsule = new Capsule(dailyTokens.remove(0), log.getIneterval(), log.getHash());
         mixImpl.sendCapsule(capsule);

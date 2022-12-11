@@ -110,7 +110,6 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
     @Override
     public ArrayList<byte[]> getTokens(String phone, int today) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException {
         ArrayList<byte[]> tokens = new ArrayList<>();
-        //System.out.println("tokens");
         byte day = (byte) today;
         signTokens(day, tokens);
         userTokensDB.put(phone, tokens);
