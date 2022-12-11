@@ -7,6 +7,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.shape.Polyline;
 
 import java.io.IOException;
+import java.awt.*;
 import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -91,7 +92,7 @@ public class Controller {
         UserApp.registerEntry(CF6.getCharacters().toString());
     }
     protected static void pictureFrame(byte[] bArray){
-
+        //Image image = SwingFXUtils.toFXImage(bArray, null);
     };
     @FXML
     protected void onClickLeave1(){
@@ -115,6 +116,30 @@ public class Controller {
     }
     @FXML
     protected void onClickLeave6(){
+
+    }
+    @FXML
+    protected void onClickPrint1(){
+        UserApp.printLogs();
+    }
+    @FXML
+    protected void onClickPrint2(){
+        UserApp.printLogs();
+    }
+    @FXML
+    protected void onClickPrint3(){
+
+    }
+    @FXML
+    protected void onClickPrint4(){
+
+    }
+    @FXML
+    protected void onClickPrint5(){
+
+    }
+    @FXML
+    protected void onClickPrint6(){
 
     }
 }

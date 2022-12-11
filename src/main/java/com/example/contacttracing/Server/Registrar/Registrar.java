@@ -13,7 +13,7 @@ import java.util.Map;
 public class Registrar {
     private SecretKey masterKey;
     private PrivateKey privateKey;
-    private PublicKey publicKey;
+    public PublicKey publicKey;
     private Map<String, ArrayList<byte[]>> derivedDB;
     private Map<String, ArrayList<byte[]>> pseudoDB;
     private Map<String, ArrayList<byte[]>> userTokensDB;

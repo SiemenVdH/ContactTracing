@@ -106,8 +106,9 @@ public class UserApp extends Controller implements Serializable {
     }
 
     public static void printLogs() {
-        for(int i=0; i<logValues.size(); i++){
-            logValues.get(i).writeToFile();
+
+        for(LocalDateTime key: logValues.keySet()){
+            logValues.get(key).writeToFile();
         }
     }
 

@@ -3,6 +3,7 @@ package com.example.contacttracing.Client;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 
 public class Log {
     private String Ri;
@@ -33,8 +34,8 @@ public class Log {
 
     public void writeToFile() {
         try {
-            FileWriter myWriter = new FileWriter("log.txt");
-            myWriter.write(Ri+"/"+hash+"/"+dailyToken+"/"+getInterval());
+            FileWriter myWriter = new FileWriter("C:\\Users\\renau\\IdeaProjects\\ContactTracing\\log.txt");
+            myWriter.write(Ri+"/"+hash+"/"+ Arrays.toString(dailyToken) +"/"+ Arrays.toString(getInterval()));
             myWriter.close();
             System.out.println("Successfully wrote to the file.");
         } catch (IOException e) {
