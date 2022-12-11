@@ -1,5 +1,6 @@
 package com.example.contacttracing.Client;
 
+import com.example.contacttracing.Controller;
 import com.example.contacttracing.Interfaces.MixingInterface;
 import com.example.contacttracing.Interfaces.RegistrarInterface;
 import com.example.contacttracing.Shared.Capsule;
@@ -14,21 +15,15 @@ import java.time.*;
 import java.util.ArrayList;
 import java.util.concurrent.*;
 
-public class UserApp {
+public class UserApp extends Controller {
     private final String phone;
-    private ArrayList<byte[]> dailyTokens;
-    private Map<LocalDateTime, Log> logValues;
+    private static ArrayList<byte[]> dailyTokens;
+    private static Map<LocalDateTime, Log> logValues;
     private RegistrarInterface regImpl;
-    private MixingInterface mixImpl;
-    private byte[] random;
+    private static MixingInterface mixImpl;
 
 
-    private byte[] generateRandomValue() {
-        byte[] random = new byte[16];
-        new SecureRandom().nextBytes(random);
-        return random;
-    }
-    private Log readQR(String qrText) {
+    private static Log readQR(String qrText) {
         String[] extracted = qrText.split("@");
         Log log = new Log(extracted[0], extracted[1], extracted[2], LocalDateTime.now());
         logValues.put(LocalDateTime.now(), log);
@@ -41,7 +36,7 @@ public class UserApp {
             Registry myRegistry1 = LocateRegistry.getRegistry("localhost", 4444);
             // search for Registrar service
             regImpl = (RegistrarInterface) myRegistry1.lookup("RegistrarService");
-            // fire to localhost port 5555
+            // fire to localhost port 5556
             Registry myRegistry2 = LocateRegistry.getRegistry("localhost", 4445);
             // search for Mixing service
             mixImpl = (MixingInterface) myRegistry2.lookup("MixingService");
@@ -56,36 +51,41 @@ public class UserApp {
 
                 Runnable generateTokens = () -> {
                     try {
-                        random = generateRandomValue();
-                        dailyTokens = regImpl.getTokens(phone, today, random);
+                        regImpl.clearDailyTokens(phone);
+                        dailyTokens = regImpl.getTokens(phone, today);
+                        clearOldLogValues();
                     } catch (RemoteException | NoSuchAlgorithmException | SignatureException | InvalidKeyException e) {
                         throw new RuntimeException(e);
                     }
                 };
                 ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-                executor.scheduleAtFixedRate(generateTokens, 0, 5, TimeUnit.SECONDS);  // iedere dag
+                executor.scheduleAtFixedRate(generateTokens, 0, 5, TimeUnit.SECONDS);   //iedere dag
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void registerEntry() throws RemoteException, NoSuchAlgorithmException, SignatureException,
-            InvalidKeyException
-    {
-        Log log = readQR("");
-        Capsule capsule = new Capsule(dailyTokens.remove(0), log.getIneterval(), log.getHash(), random);
+    public static void registerEntry(String qr) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, RemoteException {
+        Log log = readQR(qr);
+        Capsule capsule = new Capsule(dailyTokens.remove(0), log.getIneterval(), log.getHash());
         byte[] digitalConfirmation = mixImpl.sendCapsule(capsule);
         if(digitalConfirmation!=null) {
-            // Controller.pictureFrame.set(digitalConfirmation)
+            Controller.Polyline.set(digitalConfirmation);
         }
+    }
 
+    public static void clearOldLogValues() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException{
+        LocalDateTime today = LocalDateTime.now();
+        for(LocalDateTime e: logValues.keySet())
+            if(Duration.between(e, today).toDays()>10)      // entries ouder dan 10 dagen
+                logValues.remove(e);
     }
 
     public UserApp(String p){
         this.phone = p;
-        this.dailyTokens = new ArrayList<>();
-        this.logValues = new HashMap<>();
+        dailyTokens = new ArrayList<>();
+        logValues = new HashMap<>();
         run();
     }
 }

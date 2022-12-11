@@ -34,8 +34,7 @@ public class CateringFacility extends Controller {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         byte[] hash = md.digest(combined);
 
-        String qrStr = Ri.toString()+"@"+CF+"@"+hash.toString();
-        return qrStr;
+        return Arrays.toString(Ri) +"@"+CF+"@"+ Arrays.toString(hash);
     }
 
     private void run() {
