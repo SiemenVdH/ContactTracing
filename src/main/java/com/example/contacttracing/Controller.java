@@ -1,13 +1,15 @@
 package com.example.contacttracing;
 
 import com.example.contacttracing.Client.UserApp;
-import com.sun.javafx.fxml.expression.Expression;
+import com.example.contacttracing.Client.Doctor;
+
 import javafx.fxml.FXML;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.shape.Polyline;
+import javafx.scene.control.Label;
+import javafx.scene.layout.Pane;
 
 import java.io.IOException;
-import java.awt.*;
 import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -15,131 +17,58 @@ import java.security.SignatureException;
 
 public class Controller {
 
-    protected static Expression<Object> Polyline;
     @FXML
-    private TextField Enroll1;
+    private TextField Enroll;
     @FXML
-    private TextField Enroll2;
+    private Label enrollStatus;
     @FXML
-    private TextField Enroll3;
+    private TextArea QRString;
     @FXML
-    private TextField Enroll4;
+    private Pane color1;
     @FXML
-    private TextField Enroll5;
+    private Pane color2;
     @FXML
-    private TextField Enroll6;
+    private Pane color3;
     @FXML
-    private TextField CF1;
+    private Label logsPrinted;
     @FXML
-    private TextField CF2;
-    @FXML
-    private TextField CF3;
-    @FXML
-    private TextField CF4;
-    @FXML
-    private TextField CF5;
-    @FXML
-    private TextField CF6;
-    @FXML
-    protected static Polyline poly1;
+    private Label leaveStamp;
+
 
     @FXML
-    protected void onClickEnroll1(){
-        new UserApp(Enroll1.getCharacters().toString());
-    }
-    @FXML
-    protected void onClickEnroll2(){
-        new UserApp(Enroll2.getCharacters().toString());
-    }
-    @FXML
-    protected void onClickEnroll3(){
-        new UserApp(Enroll3.getCharacters().toString());
-    }
-    @FXML
-    protected void onClickEnroll4(){
-        new UserApp(Enroll4.getCharacters().toString());
-    }
-    @FXML
-    protected void onClickEnroll5(){
-        new UserApp(Enroll5.getCharacters().toString());
-    }
-    @FXML
-    protected void onClickEnroll6(){
-        new UserApp(Enroll6.getCharacters().toString());
-    }
-    @FXML
-    protected void onClickScanQr1() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IOException {
-        UserApp.registerEntry(CF1.getCharacters().toString());
-    }
-    @FXML
-    protected void onClickScanQr2() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IOException {
-        UserApp.registerEntry(CF2.getCharacters().toString());
-    }
-    @FXML
-    protected void onClickScanQr3() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IOException {
-        UserApp.registerEntry(CF3.getCharacters().toString());
-    }
-    @FXML
-    protected void onClickScanQr4() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IOException {
-        UserApp.registerEntry(CF4.getCharacters().toString());
-    }
-    @FXML
-    protected void onClickScanQr5() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IOException {
-        UserApp.registerEntry(CF5.getCharacters().toString());
-    }
-    @FXML
-    protected void onClickScanQr6() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IOException {
-        UserApp.registerEntry(CF6.getCharacters().toString());
-    }
-    protected static void pictureFrame(byte[] bArray){
-        //Image image = SwingFXUtils.toFXImage(bArray, null);
-    };
-    @FXML
-    protected void onClickLeave1(){
+    protected void onClickEnroll() {
 
+        new UserApp(Enroll.getCharacters().toString());
+        setLabelEnrol(UserApp.getEnrolStatus());
     }
     @FXML
-    protected void onClickLeave2(){
-
+    protected void setLabelEnrol(String status) {enrollStatus.setText(status);}
+    @FXML
+    protected void onClickScanQr() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IOException {
+        String[] result = UserApp.registerEntry(QRString.getText());
+        setColor1(result[0]+result[1]+result[2]);
+        setColor2(result[3]+result[4]+result[5]);
+        setColor3(result[6]+result[7]+result[8]);
     }
     @FXML
-    protected void onClickLeave3(){
-
+    protected void onClickPrint() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, RemoteException {
+        String status = UserApp.printLogs();
+        setLabelPrint(status);
+        Doctor.readLogs();
     }
     @FXML
-    protected void onClickLeave4(){
-
+    protected void setLabelPrint(String status) {logsPrinted.setText(status);}
+    @FXML
+    protected void onClickLeave(){
+        String status = UserApp.leaveFacility();
+        setLabelLeave(status);
     }
     @FXML
-    protected void onClickLeave5(){
-
-    }
+    protected void setLabelLeave(String status) {leaveStamp.setText(status);}
     @FXML
-    protected void onClickLeave6(){
-
-    }
+    protected void setColor1(String color) {color1.setStyle("-fx-background-color: #" + color);}
     @FXML
-    protected void onClickPrint1(){
-        UserApp.printLogs();
-    }
+    protected void setColor2(String color) {color2.setStyle("-fx-background-color: #" + color);}
     @FXML
-    protected void onClickPrint2(){
-        UserApp.printLogs();
-    }
-    @FXML
-    protected void onClickPrint3(){
-        UserApp.printLogs();
-    }
-    @FXML
-    protected void onClickPrint4(){
-        UserApp.printLogs();
-    }
-    @FXML
-    protected void onClickPrint5(){
-        UserApp.printLogs();
-    }
-    @FXML
-    protected void onClickPrint6(){
-        UserApp.printLogs();
-    }
+    protected void setColor3(String color) {color3.setStyle("-fx-background-color: #" + color);}
 }

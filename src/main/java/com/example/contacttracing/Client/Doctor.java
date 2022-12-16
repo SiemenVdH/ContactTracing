@@ -4,41 +4,46 @@ import com.example.contacttracing.Interfaces.MatchingInterface;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 import java.security.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Scanner;
 
 
 public class Doctor {
-    private PrivateKey privateKey;
-    private PublicKey publicKey;
-    private ArrayList<String> allLogs;
+    private static PrivateKey privateKey;
+    private static PublicKey publicKey;
+    private static ArrayList<String> allLogs;
+    private static MatchingInterface mathImpl;
 
 
-    private void readLog() {
+    private void generateKeyPair() throws NoSuchAlgorithmException {
+        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+        KeyPair keyPair = keyGen.generateKeyPair();
+        privateKey = keyPair.getPrivate();
+        publicKey = keyPair.getPublic();
+    }
+
+    private static void readLog() {
         try {
             File myObj = new File("log.txt");
             Scanner myReader = new Scanner(myObj);
             while (myReader.hasNextLine()) {
-                String data = myReader.nextLine();
-                allLogs.add(data);
+                String data1 = myReader.nextLine();
+                String data2 = myReader.nextLine();
+                System.out.println(data1+data2);
+                allLogs.add(data1+data2);
             }
             myReader.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
     }
-
-    private void generateKeyPair() throws NoSuchAlgorithmException {
-        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-        KeyPair keyPair = keyGen.generateKeyPair();
-        this.privateKey = keyPair.getPrivate();
-        this.publicKey = keyPair.getPublic();
-    }
-    private byte[] signLogs(String logs) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    private static byte[] signLogs(String logs) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         Signature signature = Signature.getInstance("SHA256withRSA");
         signature.initSign(privateKey);
         signature.update(logs.getBytes());
@@ -50,13 +55,8 @@ public class Doctor {
             // fire to localhost port 4446
             Registry myRegistry = LocateRegistry.getRegistry("localhost", 4446);
             // search for SendService & ReceiveService
-            MatchingInterface mathImpl = (MatchingInterface) myRegistry.lookup("MatchingService");
+            mathImpl = (MatchingInterface) myRegistry.lookup("MatchingService");
 
-            readLog();
-            System.out.println("Log file successfully read");
-            for(String logs: allLogs) {
-                mathImpl.forwardLogs(publicKey, signLogs(logs), logs);
-            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -65,6 +65,18 @@ public class Doctor {
     public Doctor() throws NoSuchAlgorithmException {
         this.allLogs = new ArrayList<>();
         generateKeyPair();
+    }
+
+    public static void readLogs() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException,
+            RemoteException
+    {
+        readLog();
+        System.out.println("Log file successfully read");
+        Collections.shuffle(allLogs);
+        for(String logs: allLogs) {
+            byte[] signedLog = signLogs(logs);
+            mathImpl.forwardLogs(publicKey, signedLog, logs);
+        }
     }
 
     public static void main(String[] args) throws NoSuchAlgorithmException {

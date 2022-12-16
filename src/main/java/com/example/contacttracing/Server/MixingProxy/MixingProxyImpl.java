@@ -8,9 +8,11 @@ import java.rmi.server.UnicastRemoteObject;
 
 import java.security.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 public class MixingProxyImpl extends UnicastRemoteObject implements MixingInterface {
     private MixingProxy mixprox;
+    private ArrayList<byte[]> usedTokens;
 
     private PublicKey getPublicKeyRegistrar() {
         return mixprox.getPublicKeyRegistrar();
@@ -38,17 +40,22 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingInterf
         return signature.sign();
     }
 
-    public MixingProxyImpl(MixingProxy mp) throws RemoteException {this.mixprox = mp;}
+    public MixingProxyImpl(MixingProxy mp) throws RemoteException {
+        this.mixprox = mp;
+        this.usedTokens = new ArrayList<>();
+    }
 
     @Override
     public byte[] sendCapsule(Capsule capsule) throws RemoteException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         mixprox.storeCapsule(LocalDateTime.now(), capsule);
-        if(!verifySignature(capsule.getDailyToken(), capsule.getRandom())) {
-            System.out.println("Unvalid token");
-            return null;
+        if(verifySignature(capsule.getDailyToken(), capsule.getRandom()) &&
+                !usedTokens.contains(capsule.getDailyToken())) {
+            usedTokens.add(capsule.getDailyToken());
+            return signHash(capsule.getHash());
         }
         else {
-            return signHash(capsule.getHash());
+            System.out.println("Invalid token received");
+            return new byte[256];
         }
     }
 

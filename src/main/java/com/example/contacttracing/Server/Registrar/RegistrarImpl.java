@@ -21,7 +21,7 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
     {
         for(int i=0; i<(daysInMonth-currentDay); i++) {
             Mac mac = reg.getMasterKey();
-            String specificDay = String.valueOf(LocalDateTime.now().plusDays(i).getDayOfMonth());
+            String specificDay = String.valueOf(LocalDateTime.now().plusDays(i));
             String input = CF+specificDay;
             cipherText = mac.doFinal(input.getBytes());
             derivedKeys.add(cipherText);
@@ -53,7 +53,7 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
         }
     }
 
-    public RegistrarImpl(Registrar r) throws RemoteException, NoSuchAlgorithmException {this.reg = r;}
+    public RegistrarImpl(Registrar r) throws RemoteException {this.reg = r;}
 
     @Override
     public void deriveKeys(String CF) throws RemoteException, NoSuchAlgorithmException, InvalidKeyException {
@@ -77,11 +77,11 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
     }
     @Override
     public boolean enrolUser(String phone) throws RemoteException {
-        if (!reg.getUsersDB().contains(phone)){
+        if (!phone.isBlank() && !reg.getUsersDB().contains(phone)){
             reg.addUser(phone);
             return false;
         }
-        return true;
+        else return true;
     }
 
     @Override

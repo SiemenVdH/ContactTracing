@@ -14,6 +14,10 @@ public class MatchingService {
     private ArrayList<Capsule> capsules;
     private Map<String, ArrayList<byte[]>> dailyPseudoDB;
     private ArrayList<String[]> userLogValues;
+    private ArrayList<String[]> critical;
+    private ArrayList<byte[]> informed;
+    private ArrayList<byte[]> uninformed;
+
 
     private void startServer(MatchingService matchserv) {
         try {
@@ -57,6 +61,7 @@ public class MatchingService {
 
     public void addLogs(String logData) {
         String[] data = logData.split("/");
+        // data[0] = Ri, data[1] = hash, data[2] = Interval, data[3] =dailyToken
         userLogValues.add(data);
     }
 
