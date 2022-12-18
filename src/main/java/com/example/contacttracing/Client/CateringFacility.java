@@ -44,8 +44,8 @@ public class CateringFacility extends Controller {
             // search for SendService & ReceiveService
             RegistrarInterface regImpl = (RegistrarInterface) myRegistry.lookup("RegistrarService");
 
-            AtomicInteger today = new AtomicInteger(LocalDateTime.now().getDayOfMonth());
             AtomicBoolean firstDay = new AtomicBoolean(true);
+            AtomicInteger today = new AtomicInteger(LocalDateTime.now().getDayOfMonth());
 
             Runnable getKeys = () -> {
                 try {
@@ -70,7 +70,7 @@ public class CateringFacility extends Controller {
             };
 
             ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-            executor.scheduleAtFixedRate(getKeys, 0, 5, TimeUnit.SECONDS);   //iedere dag
+            executor.scheduleAtFixedRate(getKeys, 0, 30, TimeUnit.SECONDS);   //iedere dag
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -79,24 +79,26 @@ public class UserApp extends Controller implements Serializable {
             mixImpl = (MixingInterface) myRegistry2.lookup("MixingService");
 
             if (regImpl.enrolUser(phone)) {
-                System.out.println("User already enrolt or invalid phone number!");
+                System.out.println("User: User already enrolt or invalid phone number!");
                 System.exit(1);
             }
             else {
                 setEnrolStatus("Succesfully enrolt!");
             }
-            int today = LocalDateTime.now().getDayOfMonth();
+
             Runnable generateTokens = () -> {
                 try {
+                    int today = LocalDateTime.now().getDayOfMonth();
                     random = generateRandomValue();
                     dailyTokens = regImpl.getTokens(phone, today, random);
                     clearOldLogValues();
+                    System.out.println("User: Daily tokens received and old logs cleared");
                 } catch (RemoteException | NoSuchAlgorithmException | SignatureException | InvalidKeyException e) {
                     throw new RuntimeException(e);
                 }
             };
             ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-            executor.scheduleAtFixedRate(generateTokens, 0, 5, TimeUnit.SECONDS);   //iedere dag
+            executor.scheduleAtFixedRate(generateTokens, 0, 30, TimeUnit.SECONDS);   //iedere dag
 
         } catch (Exception e) {
             e.printStackTrace();

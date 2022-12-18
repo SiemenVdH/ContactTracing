@@ -2,6 +2,7 @@ package com.example.contacttracing.Server.MatchingService;
 
 import com.example.contacttracing.Interfaces.RegistrarInterface;
 import com.example.contacttracing.Shared.Capsule;
+import org.controlsfx.control.tableview2.filter.filtereditor.SouthFilter;
 
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -21,7 +22,7 @@ public class MatchingService {
 
     private void startServer(MatchingService matchserv) {
         try {
-            // create on port 6666
+            // create on port 4446
             Registry registry = LocateRegistry.createRegistry(4446);
             // create new services
             registry.rebind("MatchingService", new MatchingServiceImpl(matchserv));
@@ -33,13 +34,14 @@ public class MatchingService {
             Runnable generateTokens = () -> {
                 try {
                     dailyPseudoDB = regImpl.getAllPseudos();
+                    System.out.println("Pseudos received");
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
                 }
                 capsules.clear();
             };
             ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-            executor.scheduleAtFixedRate(generateTokens, 0, 5, TimeUnit.SECONDS);  // iedere dag
+            executor.scheduleAtFixedRate(generateTokens, 0, 30, TimeUnit.SECONDS);  // iedere dag
 
 
         } catch (Exception e) {
@@ -63,6 +65,7 @@ public class MatchingService {
         String[] data = logData.split("/");
         // data[0] = Ri, data[1] = hash, data[2] = Interval, data[3] =dailyToken
         userLogValues.add(data);
+        System.out.println("Log data: "+data);
     }
 
     public static void main(String[] args) {

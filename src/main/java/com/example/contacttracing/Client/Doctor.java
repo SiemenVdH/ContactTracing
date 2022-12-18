@@ -12,6 +12,9 @@ import java.security.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 
 public class Doctor {
@@ -57,6 +60,13 @@ public class Doctor {
             // search for SendService & ReceiveService
             mathImpl = (MatchingInterface) myRegistry.lookup("MatchingService");
 
+            Runnable generateTokens = () -> {
+                System.out.println("Doctor: ...");
+            };
+            ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+            executor.scheduleAtFixedRate(generateTokens, 0, 5, TimeUnit.SECONDS);  // keep running
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -65,22 +75,19 @@ public class Doctor {
     public Doctor() throws NoSuchAlgorithmException {
         this.allLogs = new ArrayList<>();
         generateKeyPair();
+        run();
     }
 
     public static void readLogs() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException,
             RemoteException
     {
         readLog();
-        System.out.println("Log file successfully read");
+        System.out.println("Doctor: Log file successfully read");
         Collections.shuffle(allLogs);
         for(String logs: allLogs) {
             byte[] signedLog = signLogs(logs);
             mathImpl.forwardLogs(publicKey, signedLog, logs);
         }
-    }
-
-    public static void main(String[] args) throws NoSuchAlgorithmException {
-        Doctor main = new Doctor();
-        main.run();
+        System.out.println("Doctor: Logs forwarded");
     }
 }

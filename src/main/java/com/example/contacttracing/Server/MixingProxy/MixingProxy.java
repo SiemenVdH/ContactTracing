@@ -37,10 +37,6 @@ public class MixingProxy {
         return shuffledWindow;
     }
 
-    private ArrayList<Capsule> extractCapsules(Map<LocalDateTime, Capsule> shuffledMap) {
-        return new ArrayList<>(shuffledMap.values());
-    }
-
     private void startServer(MixingProxy mixprox) {
         try {
             // create on port 4445
@@ -63,15 +59,16 @@ public class MixingProxy {
             Runnable generateTokens = () -> {
                 try {
                     Map<LocalDateTime, Capsule> shuffledMap = shuffleCapsules();
-                    ArrayList<Capsule> capsules = extractCapsules(shuffledMap);
+                    ArrayList<Capsule> capsules = new ArrayList<>(shuffledMap.values());
                     matchImpl.flushCapsules(capsules);
                     capsuleEntrys.clear();
+                    System.out.println("Capsules flushed");
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
                 }
             };
             ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-            executor.scheduleAtFixedRate(generateTokens, 0, 5, TimeUnit.SECONDS);  // iedere dag
+            executor.scheduleAtFixedRate(generateTokens, 0, 30, TimeUnit.SECONDS);  // iedere dag
 
         } catch (Exception e) {
             e.printStackTrace();

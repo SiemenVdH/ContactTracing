@@ -37,7 +37,6 @@ public class Controller {
 
     @FXML
     protected void onClickEnroll() {
-
         new UserApp(Enroll.getCharacters().toString());
         setLabelEnrol(UserApp.getEnrolStatus());
     }
@@ -54,6 +53,7 @@ public class Controller {
     protected void onClickPrint() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, RemoteException {
         String status = UserApp.printLogs();
         setLabelPrint(status);
+        new Doctor();
         Doctor.readLogs();
     }
     @FXML
