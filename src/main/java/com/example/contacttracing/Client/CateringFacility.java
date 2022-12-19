@@ -54,6 +54,7 @@ public class CateringFacility extends Controller {
                     byte[] todayPseudo = pseudoKeys.remove(LocalDateTime.now().getMinute());
                     //  Generate daily QR string
                     qrText = generateQRString(todayPseudo);
+                    System.out.println("qrText: ");
                     System.out.println(qrText);
                 } catch (Exception e) {
                     throw new RuntimeException(e);

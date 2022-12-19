@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 public class Doctor {
     private static PrivateKey privateKey;
     private static PublicKey publicKey;
-    private static ArrayList<String> allLogs;
+    private static ArrayList<String> allLogs = new ArrayList<>();
     private static MatchingInterface mathImpl;
 
 
@@ -36,6 +36,7 @@ public class Doctor {
             File myObj = new File("log.txt");
             Scanner myReader = new Scanner(myObj);
             while (myReader.hasNextLine()) {
+                // 1 log input consists of 2 lines
                 String data1 = myReader.nextLine();
                 String data2 = myReader.nextLine();
                 System.out.println(data1+data2);
@@ -61,7 +62,9 @@ public class Doctor {
             mathImpl = (MatchingInterface) myRegistry.lookup("MatchingService");
 
             Runnable generateTokens = () -> {
+                System.out.println("is empty");
                 if(!allLogs.isEmpty()) {
+                    System.out.println("is not empty");
                     Collections.shuffle(allLogs);
                     for(String logs: allLogs) {
                         try {
@@ -70,6 +73,7 @@ public class Doctor {
                         } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException | RemoteException e) {
                             throw new RuntimeException(e);
                         }
+                        allLogs.remove(logs);
                     }
                     System.out.println("Logs forwarded");
                 }
@@ -84,13 +88,12 @@ public class Doctor {
     }
 
     public Doctor() throws NoSuchAlgorithmException {
-        this.allLogs = new ArrayList<>();
         generateKeyPair();
     }
 
     public static void readLogs() {
         readLog();
-        System.out.println("Log file successfully read");
+        System.out.println("Log file successfully received");
     }
 
     public static void main (String[] args) throws NoSuchAlgorithmException {

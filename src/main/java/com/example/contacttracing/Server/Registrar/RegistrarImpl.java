@@ -62,21 +62,23 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
     public RegistrarImpl(Registrar r) throws RemoteException {this.reg = r;}
 
     @Override
+    public boolean enrolUser(String phone) throws RemoteException {
+        if (!phone.isBlank() && !reg.getUsersDB().contains(phone)){
+            reg.addUser(phone);
+            System.out.println("UserDB: "+reg.getUsersDB());
+            return false;
+        }
+        else return true;
+    }
+    @Override
     public Map<Integer,byte[]> getPseudoKeys(String CF) throws RemoteException, NoSuchAlgorithmException,
             InvalidKeyException
     {
         Map<Integer, byte[]> dKeys = deriveKeys(CF);
         Map<Integer, byte[]> pseudoQueue = hashKeys(dKeys);
         reg.addToPseudoDB(CF, pseudoQueue);
+        System.out.println("PseudoDB: "+reg.getPseudoDB());
         return pseudoQueue;
-    }
-    @Override
-    public boolean enrolUser(String phone) throws RemoteException {
-        if (!phone.isBlank() && !reg.getUsersDB().contains(phone)){
-            reg.addUser(phone);
-            return false;
-        }
-        else return true;
     }
 
     @Override
@@ -90,6 +92,7 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
         byte day = (byte) today;
         signTokens(random, day, tokens);
         reg.addToUserTokensDB(phone, tokens);
+        System.out.println("UserTokenDB: "+reg.getUserTokensDB());
         return tokens;
     }
 

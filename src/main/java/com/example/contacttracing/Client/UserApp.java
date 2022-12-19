@@ -40,9 +40,9 @@ public class UserApp extends Controller implements Serializable {
         for(LocalDateTime e: logValues.keySet()) {
             if (Duration.between(e, today).toMinutes() > 5) {  // entries ouder dan 5 minuten
                 logValues.remove(e);
+                System.out.println("Old log file cleared");
             }
         }
-        System.out.println("Old log files cleared");
     }
 
     private static void readQR(String qrText) {
@@ -91,11 +91,11 @@ public class UserApp extends Controller implements Serializable {
             mixImpl = (MixingInterface) myRegistry2.lookup("MixingService");
 
             if (regImpl.enrolUser(phone)) {
-                System.out.println("User already enrolt or invalid phone number!");
+                System.out.println("User already enrolled or invalid phone number!");
                 System.exit(1);
             }
             else {
-                setEnrolStatus("Succesfully enrolt!");
+                setEnrolStatus("Successfully enrolled!");
             }
 
             Runnable generateTokens = () -> {
@@ -104,7 +104,9 @@ public class UserApp extends Controller implements Serializable {
                     random = generateRandomValue();
                     dailyTokens = regImpl.getTokens(phone, today, random);
                     System.out.println("Daily tokens received");
-                    clearOldLogValues();
+                    if(!logValues.isEmpty()){
+                        clearOldLogValues();
+                    }
                 } catch (RemoteException | NoSuchAlgorithmException | SignatureException | InvalidKeyException e) {
                     throw new RuntimeException(e);
                 }

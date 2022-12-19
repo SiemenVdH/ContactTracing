@@ -56,20 +56,22 @@ public class MixingProxy {
 
             this.publicKeyRegistrar = regImpl.getPublicKey();
 
-            Runnable generateTokens = () -> {
+            Runnable flushCapsules = () -> {
                 try {
-                    Map<LocalDateTime, Capsule> shuffledMap = shuffleCapsules();
-                    ArrayList<Capsule> capsules = new ArrayList<>(shuffledMap.values());
-                    matchImpl.flushCapsules(capsules);
-                    capsuleEntrys.clear();
-                    System.out.println("Capsules flushed");
+                    if(!capsuleEntrys.isEmpty()) {
+                        Map<LocalDateTime, Capsule> shuffledMap = shuffleCapsules();
+                        ArrayList<Capsule> capsules = new ArrayList<>(shuffledMap.values());
+                        matchImpl.flushCapsules(capsules);
+                        capsuleEntrys.clear();
+                        System.out.println("Capsules flushed");
+                    }
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
                 }
             };
             ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
             // iedere minuut(=dag)
-            executor.scheduleAtFixedRate(generateTokens, 0, 60, TimeUnit.SECONDS);
+            executor.scheduleAtFixedRate(flushCapsules, 0, 30, TimeUnit.SECONDS);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -85,7 +87,10 @@ public class MixingProxy {
     public PublicKey getPublicKey() {return publicKey;}
     public PrivateKey getPrivateKey() {return privateKey;}
     public PublicKey getPublicKeyRegistrar() {return publicKeyRegistrar;}
-    public void storeCapsule(LocalDateTime now, Capsule capsule) {capsuleEntrys.put(now, capsule);}
+    public void storeCapsule(LocalDateTime now, Capsule capsule) {
+        capsuleEntrys.put(now, capsule);
+        System.out.println("Capsule entrys: "+capsuleEntrys.toString());
+    }
 
     public static void main(String[] args) throws NoSuchAlgorithmException {
         MixingProxy main = new MixingProxy();

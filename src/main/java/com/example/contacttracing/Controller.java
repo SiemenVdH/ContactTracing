@@ -10,7 +10,6 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.Pane;
 
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -45,6 +44,8 @@ public class Controller {
     @FXML
     protected void onClickScanQr() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IOException {
         String[] result = UserApp.registerEntry(QRString.getText());
+        setLabelLeave("");
+        setLabelPrint("");
         setColor1(result[0]+result[1]+result[2]);
         setColor2(result[3]+result[4]+result[5]);
         setColor3(result[6]+result[7]+result[8]);

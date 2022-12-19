@@ -42,7 +42,7 @@ public class Log {
         try {
             File directory = new File("log.txt");
             FileWriter myWriter = new FileWriter(directory, true);
-            myWriter.write(Ri+"/"+hash+"/"+Arrays.toString(getInterval())+"/"+Arrays.toString(dailyToken)+"/"+CF+"\n");
+            myWriter.write(Ri+"/"+hash+"/"+Arrays.toString(getInterval())+"/"+CF+"/"+Arrays.toString(dailyToken)+"\n");
             myWriter.close();
         } catch (IOException e) {
             e.printStackTrace();

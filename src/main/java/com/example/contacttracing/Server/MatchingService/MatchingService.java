@@ -48,14 +48,14 @@ public class MatchingService {
                 try {
                     dailyPseudoDB = regImpl.getPseudosFromDay(LocalDateTime.now().getMinute());
                     System.out.println("Day specific pseudos received");
-
+                    System.out.println(dailyPseudoDB);
                     /*for(int i=0; i<userLogValues.size(); i++) {
                         byte[] Ri = userLogValues.get(i)[0].getBytes();
                         byte[] hash = userLogValues.get(i)[1].getBytes();
                         byte[] dailyPseudo = dailyPseudoDB.get();
 
                         if(checkHash(Ri, dailyPseudo).equals(hash)) {
-                            String CF = userLogValues.get(i)[4];
+                            String CF = userLogValues.get(i)[3];
                             String interval = userLogValues.get(i)[2];
 
 
@@ -64,7 +64,7 @@ public class MatchingService {
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
                 }
-                capsules.clear();
+                // capsules.clear();// delete data from db after certain time
             };
             ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
             // iedere minuut(=dag)
@@ -85,15 +85,16 @@ public class MatchingService {
 
     public void addToCapsules(ArrayList<Capsule> mixingCapsules) {
         capsules = mixingCapsules;
+        System.out.println("Capsules: "+capsules.toString());
     }
 
     public void addLogs(String logData) {
         String[] data = logData.split("/");
-        // data[0] = Ri, data[1] = hash, data[2] = Interval, data[3] =dailyToken, data[4] =CF
+        // data[0] = Ri, data[1] = hash, data[2] = Interval, data[3] =CF, data[4] =dailyToken
         userLogValues.add(data);
-        System.out.println("Log data: "+ Arrays.toString(data));
-        informed.add(data[3].getBytes());
-        System.out.println(informed);
+        System.out.println("UserLogDB: "+userLogValues);
+        informed.add(data[4].getBytes());
+        System.out.println("Informed tokens: "+informed);
     }
 
     public static void main(String[] args) {
