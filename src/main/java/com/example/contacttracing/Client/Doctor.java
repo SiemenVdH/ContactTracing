@@ -62,8 +62,8 @@ public class Doctor {
             boolean succeeded = matchImpl.forwardLogs(publicKey, signedLog, log);
             if (!succeeded) System.out.println("Invalid forwarding");
             else System.out.println("Log forwarded");
-            allLogs.remove(log);
         }
+        allLogs.clear();
     }
 
     private void run() {
@@ -84,8 +84,8 @@ public class Doctor {
                         throw new RuntimeException(e);
                     }
                     System.out.println("Logs successfully forwarded");
+                    myObj.delete();
                 }
-                myObj.delete();
             };
             ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
             executor.scheduleAtFixedRate(readLogTxt, 0, 30, TimeUnit.SECONDS);  // keep running
