@@ -18,28 +18,26 @@ import java.util.concurrent.TimeUnit;
 
 
 public class Doctor {
-    private static PrivateKey privateKey;
-    private static PublicKey publicKey;
-    private static ArrayList<String> allLogs = new ArrayList<>();
-    private static MatchingInterface mathImpl;
+    private PrivateKey privateKey;
+    private PublicKey publicKey;
+    private ArrayList<String> allLogs;
 
 
     private void generateKeyPair() throws NoSuchAlgorithmException {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
         KeyPair keyPair = keyGen.generateKeyPair();
-        privateKey = keyPair.getPrivate();
-        publicKey = keyPair.getPublic();
+        this.privateKey = keyPair.getPrivate();
+        this.publicKey = keyPair.getPublic();
     }
 
-    private static void readLog() {
+    private void readLog(File myObj) {
         try {
-            File myObj = new File("log.txt");
             Scanner myReader = new Scanner(myObj);
             while (myReader.hasNextLine()) {
                 // 1 log input consists of 2 lines
                 String data1 = myReader.nextLine();
                 String data2 = myReader.nextLine();
-                System.out.println(data1+data2);
+                // System.out.println(data1+data2);
                 allLogs.add(data1+data2);
             }
             myReader.close();
@@ -47,11 +45,25 @@ public class Doctor {
             e.printStackTrace();
         }
     }
-    private static byte[] signLogs(String logs) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+
+    private byte[] signLogs(String logs) throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
         Signature signature = Signature.getInstance("SHA256withRSA");
         signature.initSign(privateKey);
         signature.update(logs.getBytes());
         return signature.sign();
+    }
+
+    private void forwardLogs(MatchingInterface matchImpl) throws NoSuchAlgorithmException, SignatureException,
+            InvalidKeyException, RemoteException
+    {
+        Collections.shuffle(allLogs);
+        for(String log: allLogs) {
+            byte[] signedLog = signLogs(log);
+            boolean succeeded = matchImpl.forwardLogs(publicKey, signedLog, log);
+            if (!succeeded) System.out.println("Invalid forwarding");
+            else System.out.println("Log forwarded");
+            allLogs.remove(log);
+        }
     }
 
     private void run() {
@@ -59,27 +71,24 @@ public class Doctor {
             // fire to localhost port 4446
             Registry myRegistry = LocateRegistry.getRegistry("localhost", 4446);
             // search for SendService & ReceiveService
-            mathImpl = (MatchingInterface) myRegistry.lookup("MatchingService");
+            MatchingInterface matchImpl = (MatchingInterface) myRegistry.lookup("MatchingService");
 
-            Runnable generateTokens = () -> {
-                System.out.println("is empty");
-                if(!allLogs.isEmpty()) {
-                    System.out.println("is not empty");
-                    Collections.shuffle(allLogs);
-                    for(String logs: allLogs) {
-                        try {
-                            byte[] signedLog = signLogs(logs);
-                            mathImpl.forwardLogs(publicKey, signedLog, logs);
-                        } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException | RemoteException e) {
-                            throw new RuntimeException(e);
-                        }
-                        allLogs.remove(logs);
+            File myObj = new File("log.txt");
+            Runnable readLogTxt = () -> {
+                if(myObj.exists()) {
+                    readLog(myObj);
+                    System.out.println("Log file read");
+                    try {
+                        forwardLogs(matchImpl);
+                    } catch (NoSuchAlgorithmException | SignatureException | InvalidKeyException | RemoteException e) {
+                        throw new RuntimeException(e);
                     }
-                    System.out.println("Logs forwarded");
+                    System.out.println("Logs successfully forwarded");
                 }
+                myObj.delete();
             };
             ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-            executor.scheduleAtFixedRate(generateTokens, 0, 30, TimeUnit.SECONDS);  // keep running
+            executor.scheduleAtFixedRate(readLogTxt, 0, 30, TimeUnit.SECONDS);  // keep running
 
 
         } catch (Exception e) {
@@ -89,11 +98,7 @@ public class Doctor {
 
     public Doctor() throws NoSuchAlgorithmException {
         generateKeyPair();
-    }
-
-    public static void readLogs() {
-        readLog();
-        System.out.println("Log file successfully received");
+        this.allLogs = new ArrayList<>();
     }
 
     public static void main (String[] args) throws NoSuchAlgorithmException {

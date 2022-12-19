@@ -15,7 +15,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 
 public class Controller {
-
     @FXML
     private TextField Enroll;
     @FXML
@@ -54,7 +53,6 @@ public class Controller {
     protected void onClickPrint() {
         String status = UserApp.printLogs();
         setLabelPrint(status);
-        Doctor.readLogs();
     }
     @FXML
     protected void setLabelPrint(String status) {logsPrinted.setText(status);}

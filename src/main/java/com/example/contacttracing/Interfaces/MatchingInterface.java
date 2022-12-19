@@ -13,5 +13,6 @@ import java.util.ArrayList;
 
 public interface MatchingInterface extends Remote {
     void flushCapsules(ArrayList<Capsule> capsules) throws RemoteException;
-    void forwardLogs(PublicKey publicKey, byte[] digitalSignature, String logData) throws RemoteException, NoSuchAlgorithmException, SignatureException, InvalidKeyException;
+    boolean forwardLogs(PublicKey publicKey, byte[] digitalSignature, String logData) throws RemoteException,
+            NoSuchAlgorithmException, SignatureException, InvalidKeyException;
 }

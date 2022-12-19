@@ -21,7 +21,7 @@ public class MatchingService {
     private ArrayList<byte[]> informed;
 
 
-    private byte[] checkHash(byte[] Ri, byte[] dailyPseudo) throws NoSuchAlgorithmException {
+    /*private byte[] checkHash(byte[] Ri, byte[] dailyPseudo) throws NoSuchAlgorithmException {
         byte[] combined = new byte[Ri.length + dailyPseudo.length];
         for (int j = 0; j < combined.length; ++j) {
             combined[j] = j < Ri.length ? Ri[j] : dailyPseudo[j - Ri.length];
@@ -31,7 +31,7 @@ public class MatchingService {
         byte[] hash = md.digest(combined);
 
         return hash;
-    }
+    }*/
 
     private void startServer(MatchingService matchserv) {
         try {
@@ -48,7 +48,7 @@ public class MatchingService {
                 try {
                     dailyPseudoDB = regImpl.getPseudosFromDay(LocalDateTime.now().getMinute());
                     System.out.println("Day specific pseudos received");
-                    System.out.println(dailyPseudoDB);
+                    System.out.println("DailyPseudoDB: "+dailyPseudoDB);
                     /*for(int i=0; i<userLogValues.size(); i++) {
                         byte[] Ri = userLogValues.get(i)[0].getBytes();
                         byte[] hash = userLogValues.get(i)[1].getBytes();
@@ -81,11 +81,12 @@ public class MatchingService {
         this.capsules = new ArrayList<>();
         this.dailyPseudoDB = new HashMap<>();
         this.userLogValues = new ArrayList<>();
+        this.informed = new ArrayList<>();
     }
 
     public void addToCapsules(ArrayList<Capsule> mixingCapsules) {
         capsules = mixingCapsules;
-        System.out.println("Capsules: "+capsules.toString());
+        System.out.println("Capsules: "+capsules);
     }
 
     public void addLogs(String logData) {

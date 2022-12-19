@@ -29,13 +29,14 @@ public class MatchingServiceImpl extends UnicastRemoteObject implements Matching
     }
 
     @Override
-    public void forwardLogs(PublicKey publicKey, byte[] digitalSignature, String logData) throws RemoteException,
+    public boolean forwardLogs(PublicKey publicKey, byte[] digitalSignature, String logData) throws RemoteException,
             NoSuchAlgorithmException, SignatureException, InvalidKeyException
     {
         boolean confirmed = confirmSignature(publicKey, digitalSignature, logData);
         if(confirmed) {
             matchserv.addLogs(logData);
+            return true;
         }
-        else System.out.println("Invalid fowarding");
+        return false;
     }
 }

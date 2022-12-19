@@ -24,9 +24,5 @@ x
 Hsrc/main/java/com/example/contacttracing/Interfaces/MixingInterface.java,0\1\0135e1ada1ac4c417f572f8329ffe70129322500
 l
 <src/main/java/com/example/contacttracing/Shared/Capsule.java,a\8\a8377141c8e273eea3475d8a899afef9f4d0c8b9
-ˆ
-Xsrc/main/java/com/example/contacttracing/Server/MatchingService/MatchingServiceImpl.java,d\a\da0cdd78bd03540a4324c3b0b3769e9624e6166c
-€
-Psrc/main/java/com/example/contacttracing/Server/MixingProxy/MixingProxyImpl.java,6\5\65fb361843cbf4d25b2d0091984e5b32f32a8322
 {
 Ksrc/main/java/com/example/contacttracing/Interfaces/RegistrarInterface.java,c\d\cdec0bb0343cbfa56183c54337b2cb1ee9adc96e
