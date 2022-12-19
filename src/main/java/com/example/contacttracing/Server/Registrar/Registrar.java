@@ -14,8 +14,8 @@ public class Registrar {
     private SecretKey masterKey;
     private PrivateKey privateKey;
     public PublicKey publicKey;
-    private Map<String, ArrayList<byte[]>> derivedDB;
-    private Map<String, ArrayList<byte[]>> pseudoDB;
+    private Map<String, Map<Integer,byte[]>> derivedDB;
+    private Map<String, Map<Integer,byte[]>> pseudoDB;
     private Map<String, ArrayList<byte[]>> userTokensDB;
     private ArrayList<String> usersDB;
 
@@ -60,18 +60,18 @@ public class Registrar {
     public Mac getMasterKey() throws NoSuchAlgorithmException, InvalidKeyException {return getMacKey();}
     public PublicKey getPublicKey() {return this.publicKey;}
     public PrivateKey getPrivateKey() {return this.privateKey;}
-    public int getDaysOfMonth() {
+    /*public int getDaysOfMonth() {
         int month = LocalDateTime.now().getMonthValue();
         int year = LocalDateTime.now().getYear();
         YearMonth yearMonthObject = YearMonth.of(year, month);
         return yearMonthObject.lengthOfMonth();
-    }
-    public Map<String, ArrayList<byte[]>> getDerivedDB() {return derivedDB;}
-    public void addToDerivedDB(String CF, ArrayList<byte[]> derivedKeys) {derivedDB.put(CF, derivedKeys);}
-    public void removeDerivedDB(String CF) {derivedDB.remove(CF);}
-    public Map<String, ArrayList<byte[]>> getPseudoDB() {return pseudoDB;}
-    public void addToPseudoDB(String CF, ArrayList<byte[]> pseudoQueue) {pseudoDB.put(CF, pseudoQueue);}
-    public void removePseudoDB(String CF) {pseudoDB.remove(CF);}
+    }*/
+    public Map<String, Map<Integer,byte[]>> getDerivedDB() {return derivedDB;}
+    public void addToDerivedDB(String CF, Map<Integer,byte[]> derivedKeys) {derivedDB.put(CF, derivedKeys);}
+    /*public void removeDerivedDB(String CF) {derivedDB.remove(CF);}*/
+    public Map<String, Map<Integer,byte[]>> getPseudoDB() {return pseudoDB;}
+    public void addToPseudoDB(String CF, Map<Integer,byte[]> pseudoQueue) {pseudoDB.put(CF, pseudoQueue);}
+    /*public void removePseudoDB(String CF) {pseudoDB.remove(CF);}*/
     public Map<String, ArrayList<byte[]>> getUserTokensDB() {return userTokensDB;}
     public void addToUserTokensDB(String phone, ArrayList<byte[]> tokens) {userTokensDB.put(phone, tokens);}
     public void removeUserTokensDB(String phone) {userTokensDB.remove(phone);}

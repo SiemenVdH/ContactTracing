@@ -61,10 +61,21 @@ public class Doctor {
             mathImpl = (MatchingInterface) myRegistry.lookup("MatchingService");
 
             Runnable generateTokens = () -> {
-                System.out.println("Doctor: ...");
+                if(!allLogs.isEmpty()) {
+                    Collections.shuffle(allLogs);
+                    for(String logs: allLogs) {
+                        try {
+                            byte[] signedLog = signLogs(logs);
+                            mathImpl.forwardLogs(publicKey, signedLog, logs);
+                        } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException | RemoteException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    System.out.println("Logs forwarded");
+                }
             };
             ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-            executor.scheduleAtFixedRate(generateTokens, 0, 5, TimeUnit.SECONDS);  // keep running
+            executor.scheduleAtFixedRate(generateTokens, 0, 30, TimeUnit.SECONDS);  // keep running
 
 
         } catch (Exception e) {
@@ -75,19 +86,15 @@ public class Doctor {
     public Doctor() throws NoSuchAlgorithmException {
         this.allLogs = new ArrayList<>();
         generateKeyPair();
-        run();
     }
 
-    public static void readLogs() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException,
-            RemoteException
-    {
+    public static void readLogs() {
         readLog();
-        System.out.println("Doctor: Log file successfully read");
-        Collections.shuffle(allLogs);
-        for(String logs: allLogs) {
-            byte[] signedLog = signLogs(logs);
-            mathImpl.forwardLogs(publicKey, signedLog, logs);
-        }
-        System.out.println("Doctor: Logs forwarded");
+        System.out.println("Log file successfully read");
+    }
+
+    public static void main (String[] args) throws NoSuchAlgorithmException {
+        Doctor main = new Doctor();
+        main.run();
     }
 }

@@ -21,7 +21,7 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingInterf
     private boolean verifySignature(byte[] dailyToken, byte[] random) throws InvalidKeyException, NoSuchAlgorithmException,
             SignatureException
     {
-        byte day = (byte) LocalDateTime.now().getDayOfMonth();
+        byte day = (byte) LocalDateTime.now().getMinute();
         byte[] combined = new byte[random.length + day];
         for (int j = 0; j < combined.length; j++) {
             combined[j] = j < random.length ? random[j] : day;
@@ -46,7 +46,9 @@ public class MixingProxyImpl extends UnicastRemoteObject implements MixingInterf
     }
 
     @Override
-    public byte[] sendCapsule(Capsule capsule) throws RemoteException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    public byte[] sendCapsule(Capsule capsule) throws RemoteException, NoSuchAlgorithmException, InvalidKeyException,
+            SignatureException
+    {
         mixprox.storeCapsule(LocalDateTime.now(), capsule);
         if(verifySignature(capsule.getDailyToken(), capsule.getRandom()) &&
                 !usedTokens.contains(capsule.getDailyToken())) {

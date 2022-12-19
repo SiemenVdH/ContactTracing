@@ -42,7 +42,7 @@
                   <GridPane.margin>
                      <Insets right="50.0" />
                   </GridPane.margin></Button>
-                 <Button fx:id="print" alignment="CENTER" mnemonicParsing="false" onMouseClicked="#onClickPrint" prefHeight="50.0" prefWidth="100.0" text="Print logs" GridPane.columnIndex="1" GridPane.halignment="LEFT">
+                 <Button fx:id="print" alignment="CENTER" mnemonicParsing="false" onMouseClicked="#onClickPrint" prefHeight="50.0" prefWidth="100.0" text="Visit doctor" GridPane.columnIndex="1" GridPane.halignment="LEFT">
                   <GridPane.margin>
                      <Insets left="50.0" />
                   </GridPane.margin></Button>

@@ -68,11 +68,13 @@ public class MixingProxy {
                 }
             };
             ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-            executor.scheduleAtFixedRate(generateTokens, 0, 30, TimeUnit.SECONDS);  // iedere dag
+            // iedere minuut(=dag)
+            executor.scheduleAtFixedRate(generateTokens, 0, 60, TimeUnit.SECONDS);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         System.out.println("System is ready");
     }
 

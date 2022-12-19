@@ -2,23 +2,36 @@ package com.example.contacttracing.Server.MatchingService;
 
 import com.example.contacttracing.Interfaces.RegistrarInterface;
 import com.example.contacttracing.Shared.Capsule;
-import org.controlsfx.control.tableview2.filter.filtereditor.SouthFilter;
 
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
 
 public class MatchingService {
     private ArrayList<Capsule> capsules;
-    private Map<String, ArrayList<byte[]>> dailyPseudoDB;
+    private Map<String, byte[]> dailyPseudoDB;
     private ArrayList<String[]> userLogValues;
-    private ArrayList<String[]> critical;
+    private ArrayList<Capsule> critical;
     private ArrayList<byte[]> informed;
-    private ArrayList<byte[]> uninformed;
 
+
+    private byte[] checkHash(byte[] Ri, byte[] dailyPseudo) throws NoSuchAlgorithmException {
+        byte[] combined = new byte[Ri.length + dailyPseudo.length];
+        for (int j = 0; j < combined.length; ++j) {
+            combined[j] = j < Ri.length ? Ri[j] : dailyPseudo[j - Ri.length];
+        }
+
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        byte[] hash = md.digest(combined);
+
+        return hash;
+    }
 
     private void startServer(MatchingService matchserv) {
         try {
@@ -33,16 +46,29 @@ public class MatchingService {
 
             Runnable generateTokens = () -> {
                 try {
-                    dailyPseudoDB = regImpl.getAllPseudos();
-                    System.out.println("Pseudos received");
+                    dailyPseudoDB = regImpl.getPseudosFromDay(LocalDateTime.now().getMinute());
+                    System.out.println("Day specific pseudos received");
+
+                    /*for(int i=0; i<userLogValues.size(); i++) {
+                        byte[] Ri = userLogValues.get(i)[0].getBytes();
+                        byte[] hash = userLogValues.get(i)[1].getBytes();
+                        byte[] dailyPseudo = dailyPseudoDB.get();
+
+                        if(checkHash(Ri, dailyPseudo).equals(hash)) {
+                            String CF = userLogValues.get(i)[4];
+                            String interval = userLogValues.get(i)[2];
+
+
+                        }
+                    }*/
                 } catch (RemoteException e) {
                     throw new RuntimeException(e);
                 }
                 capsules.clear();
             };
             ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-            executor.scheduleAtFixedRate(generateTokens, 0, 30, TimeUnit.SECONDS);  // iedere dag
-
+            // iedere minuut(=dag)
+            executor.scheduleAtFixedRate(generateTokens, 0, 60, TimeUnit.SECONDS);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -63,9 +89,11 @@ public class MatchingService {
 
     public void addLogs(String logData) {
         String[] data = logData.split("/");
-        // data[0] = Ri, data[1] = hash, data[2] = Interval, data[3] =dailyToken
+        // data[0] = Ri, data[1] = hash, data[2] = Interval, data[3] =dailyToken, data[4] =CF
         userLogValues.add(data);
-        System.out.println("Log data: "+data);
+        System.out.println("Log data: "+ Arrays.toString(data));
+        informed.add(data[3].getBytes());
+        System.out.println(informed);
     }
 
     public static void main(String[] args) {

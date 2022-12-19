@@ -7,10 +7,9 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
 import java.security.*;
-import java.time.*;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
 
 public class CateringFacility extends Controller {
     private final String name;
@@ -19,7 +18,7 @@ public class CateringFacility extends Controller {
     private final String busNum; // Business number
     private final String CF; // Unique identifier
     private String qrText;
-    private ArrayList<byte[]> pseudoKeys;
+    private Map<Integer,byte[]> pseudoKeys;
 
 
     private String generateQRString(byte[] todayPseudo) throws Exception {
@@ -44,33 +43,26 @@ public class CateringFacility extends Controller {
             // search for SendService & ReceiveService
             RegistrarInterface regImpl = (RegistrarInterface) myRegistry.lookup("RegistrarService");
 
-            AtomicBoolean firstDay = new AtomicBoolean(true);
-            AtomicInteger today = new AtomicInteger(LocalDateTime.now().getDayOfMonth());
-
             Runnable getKeys = () -> {
                 try {
                     if(pseudoKeys.isEmpty()) {
-                        // Clear old keys and derive daily and pseudo keys for the coming 30 days
-                        regImpl.deriveKeys(CF);
+                        // Clear old keys and derive daily and pseudo keys for the coming days of the month
                         pseudoKeys = regImpl.getPseudoKeys(CF);
                     }
 
-                    if(LocalDateTime.now().getDayOfMonth()!= today.get()|| firstDay.get()) {
-                        firstDay.set(false);
-                        today.set(LocalDateTime.now().getDayOfMonth());
-                        // Get pseudo key of the day
-                        byte[] todayPseudo = pseudoKeys.remove(0);
-                        //  Generate daily QR string and code
-                        qrText = generateQRString(todayPseudo);
-                        System.out.println(qrText);
-                    }
+                    // Get pseudo key of the day
+                    byte[] todayPseudo = pseudoKeys.remove(LocalDateTime.now().getMinute());
+                    //  Generate daily QR string
+                    qrText = generateQRString(todayPseudo);
+                    System.out.println(qrText);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
             };
 
             ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-            executor.scheduleAtFixedRate(getKeys, 0, 30, TimeUnit.SECONDS);   //iedere dag
+            // iedere minuut(=dag)
+            executor.scheduleAtFixedRate(getKeys, 0, 60, TimeUnit.SECONDS);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -83,7 +75,7 @@ public class CateringFacility extends Controller {
         this.phone = p;
         this.busNum = bN;
         this.CF = n+c+p+bN;
-        this.pseudoKeys = new ArrayList<>();
+        this.pseudoKeys = new HashMap<>();
     }
 
     public static void main(String[] args) {

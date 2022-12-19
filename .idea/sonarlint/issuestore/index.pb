@@ -22,9 +22,11 @@ G.idea/sonarlint/issuestore/a/5/a5cc2925ca8258af241be7e5b0381edf30266302,e\d\ed
 pom.xml,4\4\442292b8a7efeabbe4cc176709b833b1792140ec
 z
 Jsrc/main/java/com/example/contacttracing/Interfaces/MatchingInterface.java,5\b\5b58c6a0a4ed783892aed399f6e27ae681be88a4
-i
-9src/main/java/com/example/contacttracing/Application.java,6\0\6033ecd0c6c86cc087aa8f1e8a7ea35eb2453d18
 x
 Hsrc/main/java/com/example/contacttracing/Interfaces/MixingInterface.java,0\1\0135e1ada1ac4c417f572f8329ffe70129322500
 N
 src/main/java/module-info.java,1\c\1c89a5491fbfda3fb050196d6a239f20200296e7
+l
+<src/main/java/com/example/contacttracing/Shared/Capsule.java,a\8\a8377141c8e273eea3475d8a899afef9f4d0c8b9
+ˆ
+Xsrc/main/java/com/example/contacttracing/Server/MatchingService/MatchingServiceImpl.java,d\a\da0cdd78bd03540a4324c3b0b3769e9624e6166c

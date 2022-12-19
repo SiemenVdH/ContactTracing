@@ -16,25 +16,31 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
     private byte[] cipherText;
 
 
-    private void makeDerivedKeys(String CF, int daysInMonth, int currentDay, ArrayList<byte[]> derivedKeys) throws
-            NoSuchAlgorithmException, InvalidKeyException
-    {
-        for(int i=0; i<(daysInMonth-currentDay); i++) {
+    private Map<Integer, byte[]> deriveKeys(String CF) throws NoSuchAlgorithmException, InvalidKeyException {
+        /*int daysInMonth = reg.getDaysOfMonth();
+        int currentDay = LocalDateTime.now().getDayOfMonth();*/
+        Map<Integer,byte[]> derivedKeys = new HashMap<>();
+
+        // Maak derived keyset voor komende 30 minuten (zogezegd 1 maand)
+        for(int i=0; i<30; i++) {
             Mac mac = reg.getMasterKey();
-            String specificDay = String.valueOf(LocalDateTime.now().plusDays(i));
+            int specificDay = LocalDateTime.now().plusMinutes(i).getMinute();
             String input = CF+specificDay;
             cipherText = mac.doFinal(input.getBytes());
-            derivedKeys.add(cipherText);
+            derivedKeys.put(specificDay,cipherText);
         }
+        reg.addToDerivedDB(CF, derivedKeys);
+        return derivedKeys;
     }
 
-    private void hashKeys(String CF, ArrayList<byte[]> pseudoQueue) throws NoSuchAlgorithmException {
+    private Map<Integer, byte[]> hashKeys(Map<Integer, byte[]> dKeys) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        ArrayList<byte[]> temp = reg.getDerivedDB().get(CF);
-        for (byte[] bytes : temp) {
-            byte[] hash = md.digest(bytes);
-            pseudoQueue.add(hash);
+        Map<Integer, byte[]> pseudoQueue = new HashMap<>();
+        for(Integer day : dKeys.keySet()) {
+            byte[] hash = md.digest(dKeys.get(day));
+            pseudoQueue.put(day,hash);
         }
+        return pseudoQueue;
     }
 
     private void signTokens(byte[] random, byte day, ArrayList<byte[]> tokens) throws NoSuchAlgorithmException,
@@ -56,24 +62,13 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
     public RegistrarImpl(Registrar r) throws RemoteException {this.reg = r;}
 
     @Override
-    public void deriveKeys(String CF) throws RemoteException, NoSuchAlgorithmException, InvalidKeyException {
-        if(reg.getDerivedDB().containsKey(CF) && reg.getPseudoDB().containsKey(CF)) {
-            reg.removeDerivedDB(CF);
-            reg.removePseudoDB(CF);
-        }
-        int daysInMonth = reg.getDaysOfMonth();
-        int currentDay = LocalDateTime.now().getDayOfMonth();
-        ArrayList<byte[]> derivedKeys = new ArrayList<>();
-        makeDerivedKeys(CF, daysInMonth, currentDay, derivedKeys);
-        reg.addToDerivedDB(CF, derivedKeys);
-    }
-
-    @Override
-    public ArrayList<byte[]> getPseudoKeys(String CF) throws RemoteException, NoSuchAlgorithmException {
-        ArrayList<byte[]> pseudoQueue = new ArrayList<>();
-        hashKeys(CF, pseudoQueue);
+    public Map<Integer,byte[]> getPseudoKeys(String CF) throws RemoteException, NoSuchAlgorithmException,
+            InvalidKeyException
+    {
+        Map<Integer, byte[]> dKeys = deriveKeys(CF);
+        Map<Integer, byte[]> pseudoQueue = hashKeys(dKeys);
         reg.addToPseudoDB(CF, pseudoQueue);
-        return reg.getPseudoDB().get(CF);
+        return pseudoQueue;
     }
     @Override
     public boolean enrolUser(String phone) throws RemoteException {
@@ -104,7 +99,11 @@ public class RegistrarImpl extends UnicastRemoteObject implements RegistrarInter
     }
 
     @Override
-    public Map<String, ArrayList<byte[]>> getAllPseudos() throws RemoteException {
-        return  reg.getPseudoDB();
+    public Map<String, byte[]> getPseudosFromDay(int day) throws RemoteException {
+        Map<String, byte[]> daySpecificPseudos = new HashMap<>();
+        for(String CF : reg.getPseudoDB().keySet()) {
+            daySpecificPseudos.put(CF, reg.getPseudoDB().get(CF).get(day));
+        }
+        return daySpecificPseudos;
     }
 }

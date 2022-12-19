@@ -34,9 +34,21 @@ public class UserApp extends Controller implements Serializable {
         new SecureRandom().nextBytes(random);
         return random;
     }
+
+    private static void clearOldLogValues() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException{
+        LocalDateTime today = LocalDateTime.now();
+        for(LocalDateTime e: logValues.keySet()) {
+            if (Duration.between(e, today).toMinutes() > 5) {  // entries ouder dan 5 minuten
+                logValues.remove(e);
+            }
+        }
+        System.out.println("Old log files cleared");
+    }
+
     private static void readQR(String qrText) {
         String[] extracted = qrText.split("@");
         LocalDateTime now = LocalDateTime.now();
+        // extracted[0] = Ri, extracted[1] = CF, extracted[2] = hash
         tempLog = new Log(extracted[0], extracted[1], extracted[2], now, dailyTokens.remove(0));
         logValues.put(now, tempLog);
     }
@@ -79,7 +91,7 @@ public class UserApp extends Controller implements Serializable {
             mixImpl = (MixingInterface) myRegistry2.lookup("MixingService");
 
             if (regImpl.enrolUser(phone)) {
-                System.out.println("User: User already enrolt or invalid phone number!");
+                System.out.println("User already enrolt or invalid phone number!");
                 System.exit(1);
             }
             else {
@@ -88,17 +100,18 @@ public class UserApp extends Controller implements Serializable {
 
             Runnable generateTokens = () -> {
                 try {
-                    int today = LocalDateTime.now().getDayOfMonth();
+                    int today = LocalDateTime.now().getMinute();
                     random = generateRandomValue();
                     dailyTokens = regImpl.getTokens(phone, today, random);
+                    System.out.println("Daily tokens received");
                     clearOldLogValues();
-                    System.out.println("User: Daily tokens received and old logs cleared");
                 } catch (RemoteException | NoSuchAlgorithmException | SignatureException | InvalidKeyException e) {
                     throw new RuntimeException(e);
                 }
             };
             ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-            executor.scheduleAtFixedRate(generateTokens, 0, 30, TimeUnit.SECONDS);   //iedere dag
+            // iedere minuut(=dag)
+            executor.scheduleAtFixedRate(generateTokens, 0, 60, TimeUnit.SECONDS);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -124,22 +137,15 @@ public class UserApp extends Controller implements Serializable {
         byte[] digitalConfirmation = mixImpl.sendCapsule(capsule);
         boolean confirmed = confirmSignature(digitalConfirmation, capsule);
         if(!confirmed) return null;
-        System.out.println(Arrays.toString(digitalConfirmation));
+        //System.out.println(Arrays.toString(digitalConfirmation));
         return getColor(digitalConfirmation);
-    }
-
-    public static void clearOldLogValues() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException{
-        LocalDateTime today = LocalDateTime.now();
-        for(LocalDateTime e: logValues.keySet())
-            if(Duration.between(e, today).toDays()>10)   // entries ouder dan 10 dagen
-                logValues.remove(e);
     }
 
     public static String printLogs() {
         for(LocalDateTime key: logValues.keySet()){
             logValues.get(key).writeToFile();
         }
-        return "Logs printed!";
+        return "Infection reported!";
     }
 
     public static String leaveFacility() {

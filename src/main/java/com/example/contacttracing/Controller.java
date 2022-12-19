@@ -50,10 +50,9 @@ public class Controller {
         setColor3(result[6]+result[7]+result[8]);
     }
     @FXML
-    protected void onClickPrint() throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, RemoteException {
+    protected void onClickPrint() {
         String status = UserApp.printLogs();
         setLabelPrint(status);
-        new Doctor();
         Doctor.readLogs();
     }
     @FXML

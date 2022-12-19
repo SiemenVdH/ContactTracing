@@ -33,8 +33,8 @@ public class Log {
 
     public int[] getInterval() {
         int[] interval = new int[2];
-        interval[0] = arrival.getHour();
-        interval[1] = arrival.plusHours(1).getHour();
+        interval[0] = arrival.getMinute();
+        interval[1] = arrival.plusMinutes(1).getMinute();
         return interval;
     }
 
@@ -42,7 +42,7 @@ public class Log {
         try {
             File directory = new File("log.txt");
             FileWriter myWriter = new FileWriter(directory, true);
-            myWriter.write(Ri+"/"+hash+"/"+Arrays.toString(getInterval())+"/"+Arrays.toString(dailyToken)+"\n");
+            myWriter.write(Ri+"/"+hash+"/"+Arrays.toString(getInterval())+"/"+Arrays.toString(dailyToken)+"/"+CF+"\n");
             myWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
