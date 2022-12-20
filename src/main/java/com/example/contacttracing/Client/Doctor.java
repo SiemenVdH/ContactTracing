@@ -77,13 +77,13 @@ public class Doctor {
             Runnable readLogTxt = () -> {
                 if(myObj.exists()) {
                     readLog(myObj);
-                    System.out.println("Log file read");
+                    System.out.println("Log.txt file read");
                     try {
                         forwardLogs(matchImpl);
                     } catch (NoSuchAlgorithmException | SignatureException | InvalidKeyException | RemoteException e) {
                         throw new RuntimeException(e);
                     }
-                    System.out.println("Logs successfully forwarded");
+                    System.out.println("All logs successfully forwarded");
                     myObj.delete();
                 }
             };
